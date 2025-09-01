@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: ucms-postgres
+    environment:
+      POSTGRES_DB: ucms
+      POSTGRES_USER: ucms_user
+      POSTGRES_PASSWORD: ucms_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - ucms-network
+
+  backend:
+    build: ./backend
+    container_name: ucms-backend
+    environment:
+      DATABASE_URL: jdbc:postgresql://postgres:5432/ucms
+      DATABASE_USERNAME: ucms_user
+      DATABASE_PASSWORD: ucms_password
+      JWT_SECRET: your-very-secure-jwt-secret-key-change-this-in-production
+      CORS_ALLOWED_ORIGINS: http://localhost:5173,http://localhost:3000
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    networks:
+      - ucms-network
+
+volumes:
+  postgres_data:
+
+networks:
+  ucms-network:
+    driver: bridge
