@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Container,
   Typography,
-  Grid,
   Card,
   CardContent,
   CardActions,
@@ -91,8 +90,8 @@ const CourseCatalogPage: React.FC = () => {
 
       {/* Filters */}
       <Box sx={{ mb: 3 }}>
-        <Grid container spacing={2}>
-          <Grid item xs={12} md={6}>
+        <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', md: 'row' } }}>
+          <Box sx={{ flex: 1 }}>
             <TextField
               fullWidth
               label="Search courses..."
@@ -101,8 +100,8 @@ const CourseCatalogPage: React.FC = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search by title, code, or description"
             />
-          </Grid>
-          <Grid item xs={12} md={6}>
+          </Box>
+          <Box sx={{ flex: 1 }}>
             <FormControl fullWidth>
               <InputLabel>Semester</InputLabel>
               <Select
@@ -117,14 +116,22 @@ const CourseCatalogPage: React.FC = () => {
                 ))}
               </Select>
             </FormControl>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
       </Box>
 
       {/* Course Cards */}
-      <Grid container spacing={3}>
+      <Box sx={{ 
+        display: 'grid', 
+        gridTemplateColumns: { 
+          xs: '1fr', 
+          md: 'repeat(2, 1fr)', 
+          lg: 'repeat(3, 1fr)' 
+        }, 
+        gap: 3 
+      }}>
         {filteredCourses.map((course) => (
-          <Grid item xs={12} md={6} lg={4} key={course.id}>
+          <Box key={course.id}>
             <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
               <CardContent sx={{ flexGrow: 1 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 2 }}>
@@ -150,7 +157,7 @@ const CourseCatalogPage: React.FC = () => {
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   <Person sx={{ mr: 1, fontSize: 16 }} />
                   <Typography variant="body2">
-                    {course.professor?.name || 'TBA'}
+                    {course.professor?.user?.name || 'TBA'}
                   </Typography>
                 </Box>
                 
@@ -185,9 +192,9 @@ const CourseCatalogPage: React.FC = () => {
                 )}
               </CardActions>
             </Card>
-          </Grid>
+          </Box>
         ))}
-      </Grid>
+      </Box>
 
       {filteredCourses.length === 0 && !loading && (
         <Box sx={{ textAlign: 'center', mt: 4 }}>
