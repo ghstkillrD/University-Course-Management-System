@@ -10,6 +10,10 @@ import RegisterPage from './pages/RegisterPage';
 import TestPage from './pages/TestPage';
 import UserManagementPage from './pages/UserManagementPage';
 import CourseManagementPage from './pages/CourseManagementPage';
+import StudentManagementPage from './pages/StudentManagementPage';
+import EnrollmentManagementPage from './pages/EnrollmentManagementPage';
+import GradeManagementPage from './pages/GradeManagementPage';
+import SystemAnalyticsPage from './pages/SystemAnalyticsPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
 const theme = createTheme({
@@ -62,6 +66,26 @@ function App() {
               <Route path="admin/courses" element={
                 <ProtectedRoute>
                   <CourseManagementPage />
+                </ProtectedRoute>
+              } />
+              <Route path="admin/students" element={
+                <ProtectedRoute>
+                  <StudentManagementPage />
+                </ProtectedRoute>
+              } />
+              <Route path="admin/enrollments" element={
+                <ProtectedRoute>
+                  <EnrollmentManagementPage />
+                </ProtectedRoute>
+              } />
+              <Route path="admin/grades" element={
+                <ProtectedRoute>
+                  <GradeManagementPage />
+                </ProtectedRoute>
+              } />
+              <Route path="admin/analytics" element={
+                <ProtectedRoute>
+                  <SystemAnalyticsPage />
                 </ProtectedRoute>
               } />
             </Route>

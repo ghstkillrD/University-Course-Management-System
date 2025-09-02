@@ -1,8 +1,6 @@
 package com.ucms.controller;
 
-import com.ucms.dto.CreateUserRequest;
-import com.ucms.dto.UpdateUserRequest;
-import com.ucms.dto.UserResponse;
+import com.ucms.dto.*;
 import com.ucms.entity.Professor;
 import com.ucms.entity.Student;
 import com.ucms.entity.User;
@@ -18,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 import jakarta.validation.Valid;
 import java.util.List;
@@ -294,5 +294,175 @@ public class AdminController {
         public long getTotalStudents() { return totalStudents; }
         public long getTotalProfessors() { return totalProfessors; }
         public long getTotalAdmins() { return totalAdmins; }
+    }
+
+    // ===============================
+    // STUDENT MANAGEMENT ENDPOINTS
+    // ===============================
+
+    /**
+     * Get all students with pagination and search (Phase 3)
+     */
+    @GetMapping("/students/detailed")
+    public ResponseEntity<Page<StudentDetailResponse>> getAllStudentsDetailed(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir,
+            @RequestParam(required = false) String search) {
+        return ResponseEntity.ok(adminService.getAllStudents(page, size, sortBy, sortDir, search));
+    }
+
+    /**
+     * Get student details with enrollment history
+     */
+    @GetMapping("/students/{studentId}/details")
+    public ResponseEntity<StudentDetailResponse> getStudentDetails(@PathVariable Long studentId) {
+        return ResponseEntity.ok(adminService.getStudentDetails(studentId));
+    }
+
+    /**
+     * Update student information
+     */
+    @PutMapping("/students/{studentId}")
+    public ResponseEntity<StudentDetailResponse> updateStudent(
+            @PathVariable Long studentId,
+            @RequestBody UpdateStudentRequest request) {
+        return ResponseEntity.ok(adminService.updateStudent(studentId, request));
+    }
+
+    /**
+     * Force enroll student in course (override capacity)
+     */
+    @PostMapping("/students/{studentId}/force-enroll/{courseId}")
+    public ResponseEntity<String> forceEnrollStudent(
+            @PathVariable Long studentId,
+            @PathVariable Long courseId,
+            @RequestParam(required = false) String reason) {
+        adminService.forceEnrollStudent(studentId, courseId, reason);
+        return ResponseEntity.ok("Student successfully force-enrolled");
+    }
+
+    /**
+     * Force drop student from course
+     */
+    @DeleteMapping("/students/{studentId}/drop/{courseId}")
+    public ResponseEntity<String> forceDropStudent(
+            @PathVariable Long studentId,
+            @PathVariable Long courseId,
+            @RequestParam(required = false) String reason) {
+        adminService.forceDropStudent(studentId, courseId, reason);
+        return ResponseEntity.ok("Student successfully dropped from course");
+    }
+
+    // ===============================
+    // GRADE MANAGEMENT ENDPOINTS
+    // ===============================
+
+    /**
+     * Get all grades system-wide with pagination
+     */
+    @GetMapping("/grades")
+    public ResponseEntity<Page<GradeResponse>> getAllGrades(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir,
+            @RequestParam(required = false) String courseCode,
+            @RequestParam(required = false) String studentName,
+            @RequestParam(required = false) String semester) {
+        return ResponseEntity.ok(adminService.getAllGrades(page, size, sortBy, sortDir, courseCode, studentName, semester));
+    }
+
+    /**
+     * Update/override any grade in the system
+     */
+    @PutMapping("/grades/{enrollmentId}")
+    public ResponseEntity<GradeResponse> updateGrade(
+            @PathVariable Long enrollmentId,
+            @RequestBody UpdateGradeRequest request) {
+        return ResponseEntity.ok(adminService.updateGrade(enrollmentId, request));
+    }
+
+    /**
+     * Get grade analytics and reporting
+     */
+    @GetMapping("/grades/analytics")
+    public ResponseEntity<GradeAnalyticsResponse> getGradeAnalytics(
+            @RequestParam(required = false) String semester,
+            @RequestParam(required = false) String courseCode) {
+        return ResponseEntity.ok(adminService.getGradeAnalytics(semester, courseCode));
+    }
+
+    /**
+     * Get course grade distribution
+     */
+    @GetMapping("/grades/distribution/{courseId}")
+    public ResponseEntity<GradeDistributionResponse> getCourseGradeDistribution(@PathVariable Long courseId) {
+        return ResponseEntity.ok(adminService.getCourseGradeDistribution(courseId));
+    }
+
+    // ===============================
+    // SYSTEM ADMINISTRATION
+    // ===============================
+
+    /**
+     * Get semester management data
+     */
+    @GetMapping("/semesters")
+    public ResponseEntity<List<SemesterResponse>> getAllSemesters() {
+        return ResponseEntity.ok(adminService.getAllSemesters());
+    }
+
+    /**
+     * Create new semester
+     */
+    @PostMapping("/semesters")
+    public ResponseEntity<SemesterResponse> createSemester(@RequestBody CreateSemesterRequest request) {
+        return ResponseEntity.ok(adminService.createSemester(request));
+    }
+
+    /**
+     * Get department management data
+     */
+    @GetMapping("/departments")
+    public ResponseEntity<List<DepartmentResponse>> getAllDepartments() {
+        return ResponseEntity.ok(adminService.getAllDepartments());
+    }
+
+    /**
+     * Create new department
+     */
+    @PostMapping("/departments")
+    public ResponseEntity<DepartmentResponse> createDepartment(@RequestBody CreateDepartmentRequest request) {
+        return ResponseEntity.ok(adminService.createDepartment(request));
+    }
+
+    /**
+     * Get comprehensive system statistics
+     */
+    @GetMapping("/system-stats")
+    public ResponseEntity<SystemStatisticsResponse> getSystemStatistics() {
+        return ResponseEntity.ok(adminService.getSystemStatistics());
+    }
+
+    /**
+     * Get enrollment trends and analytics
+     */
+    @GetMapping("/enrollment-trends")
+    public ResponseEntity<EnrollmentTrendsResponse> getEnrollmentTrends(
+            @RequestParam(required = false) String timeRange) {
+        return ResponseEntity.ok(adminService.getEnrollmentTrends(timeRange));
+    }
+
+    /**
+     * Generate system reports
+     */
+    @GetMapping("/reports/{reportType}")
+    public ResponseEntity<SystemReportResponse> generateReport(
+            @PathVariable String reportType,
+            @RequestParam(required = false) String semester,
+            @RequestParam(required = false) String department) {
+        return ResponseEntity.ok(adminService.generateReport(reportType, semester, department));
     }
 }

@@ -24,6 +24,10 @@ import {
   MenuBook,
   AdminPanelSettings,
   Group,
+  Assignment,
+  Analytics,
+  PersonAdd,
+  Grade,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -61,6 +65,10 @@ const Layout: React.FC = () => {
       baseItems.push(
         { text: 'Manage Courses', icon: <School />, path: '/admin/courses' },
         { text: 'User Management', icon: <Group />, path: '/admin/users' },
+        { text: 'Student Management', icon: <PersonAdd />, path: '/admin/students' },
+        { text: 'Enrollment Management', icon: <Assignment />, path: '/admin/enrollments' },
+        { text: 'Grade Management', icon: <Grade />, path: '/admin/grades' },
+        { text: 'System Analytics', icon: <Analytics />, path: '/admin/analytics' },
         { text: 'System Settings', icon: <AdminPanelSettings />, path: '/admin/settings' }
       );
     }
