@@ -127,8 +127,6 @@ const UserManagementPage: React.FC = () => {
         role: selectedUser.role as 'STUDENT' | 'PROFESSOR' | 'ADMIN',
         name: selectedUser.name,
         email: selectedUser.email,
-        studentId: selectedUser.studentId,
-        employeeId: selectedUser.employeeId,
         department: selectedUser.department,
       });
       setOpenDialog(true);
@@ -361,12 +359,6 @@ const UserManagementPage: React.FC = () => {
               {formData.role === 'STUDENT' && (
                 <>
                   <TextField
-                    label="Student ID (auto-generated if empty)"
-                    value={formData.studentId || ''}
-                    onChange={(e) => setFormData({ ...formData, studentId: e.target.value })}
-                    fullWidth
-                  />
-                  <TextField
                     type="date"
                     label="Date of Birth"
                     value={formData.dateOfBirth || ''}
@@ -379,12 +371,6 @@ const UserManagementPage: React.FC = () => {
 
               {formData.role === 'PROFESSOR' && (
                 <>
-                  <TextField
-                    label="Employee ID (auto-generated if empty)"
-                    value={formData.employeeId || ''}
-                    onChange={(e) => setFormData({ ...formData, employeeId: e.target.value })}
-                    fullWidth
-                  />
                   <TextField
                     label="Department"
                     value={formData.department || ''}

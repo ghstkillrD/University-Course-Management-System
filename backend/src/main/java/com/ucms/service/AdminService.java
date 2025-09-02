@@ -116,7 +116,7 @@ public class AdminService {
     private void createStudentProfile(User user, CreateUserRequest request) {
         Student student = new Student();
         student.setUser(user); // Set the user relationship instead of ID
-        student.setStudentId(request.getStudentId() != null ? request.getStudentId() : generateStudentId());
+        student.setStudentId(generateStudentId()); // Always auto-generate
         student.setName(request.getName());
         student.setEmail(request.getEmail());
         
@@ -130,7 +130,7 @@ public class AdminService {
     private void createProfessorProfile(User user, CreateUserRequest request) {
         Professor professor = new Professor();
         professor.setUser(user); // Set the user relationship instead of ID
-        professor.setEmployeeId(request.getEmployeeId() != null ? request.getEmployeeId() : generateEmployeeId());
+        professor.setEmployeeId(generateEmployeeId()); // Always auto-generate
         professor.setName(request.getName());
         professor.setEmail(request.getEmail());
         professor.setDepartment(request.getDepartment());
@@ -144,9 +144,7 @@ public class AdminService {
 
         student.setName(request.getName());
         student.setEmail(request.getEmail());
-        if (request.getStudentId() != null) {
-            student.setStudentId(request.getStudentId());
-        }
+        // Note: studentId is not updated as it's auto-generated and should remain constant
         if (request.getDateOfBirth() != null && !request.getDateOfBirth().isEmpty()) {
             student.setDateOfBirth(LocalDate.parse(request.getDateOfBirth()));
         }
@@ -160,9 +158,7 @@ public class AdminService {
 
         professor.setName(request.getName());
         professor.setEmail(request.getEmail());
-        if (request.getEmployeeId() != null) {
-            professor.setEmployeeId(request.getEmployeeId());
-        }
+        // Note: employeeId is not updated as it's auto-generated and should remain constant
         if (request.getDepartment() != null) {
             professor.setDepartment(request.getDepartment());
         }
@@ -171,14 +167,14 @@ public class AdminService {
     }
 
     private String generateStudentId() {
-        // Generate a unique student ID (you can implement your own logic)
+        // Generate a unique student ID in STUXXXX format
         long count = userRepository.countByRole(User.Role.STUDENT);
-        return "STU" + String.format("%06d", count + 1);
+        return "STU" + String.format("%04d", count + 1);
     }
 
     private String generateEmployeeId() {
-        // Generate a unique employee ID
+        // Generate a unique employee ID in PROXXXX format  
         long count = userRepository.countByRole(User.Role.PROFESSOR);
-        return "EMP" + String.format("%06d", count + 1);
+        return "PRO" + String.format("%04d", count + 1);
     }
 }
