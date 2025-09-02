@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
@@ -24,6 +25,12 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
+    
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+    
+    @Column(name = "active")
+    private boolean active = true;
     
     public enum Role {
         STUDENT, PROFESSOR, ADMIN

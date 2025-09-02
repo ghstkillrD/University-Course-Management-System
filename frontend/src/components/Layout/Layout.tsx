@@ -22,6 +22,8 @@ import {
   Person,
   ExitToApp,
   MenuBook,
+  AdminPanelSettings,
+  Group,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -45,11 +47,26 @@ const Layout: React.FC = () => {
     handleClose();
   };
 
-  const menuItems = [
-    { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
-    { text: 'Course Catalog', icon: <School />, path: '/courses' },
-    { text: 'My Courses', icon: <MenuBook />, path: '/my-courses' },
-  ];
+  const getMenuItems = () => {
+    const baseItems = [
+      { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
+      { text: 'Course Catalog', icon: <School />, path: '/courses' },
+    ];
+
+    if (user?.role === 'STUDENT') {
+      baseItems.push({ text: 'My Courses', icon: <MenuBook />, path: '/my-courses' });
+    } else if (user?.role === 'PROFESSOR') {
+      baseItems.push({ text: 'My Courses', icon: <MenuBook />, path: '/my-courses' });
+    } else if (user?.role === 'ADMIN') {
+      baseItems.push(
+        { text: 'Manage Courses', icon: <School />, path: '/admin/courses' },
+        { text: 'User Management', icon: <Group />, path: '/admin/users' },
+        { text: 'System Settings', icon: <AdminPanelSettings />, path: '/admin/settings' }
+      );
+    }
+
+    return baseItems;
+  };
 
   return (
     <Box sx={{ display: 'flex' }}>
@@ -114,7 +131,7 @@ const Layout: React.FC = () => {
         <Toolbar />
         <Box sx={{ overflow: 'auto' }}>
           <List>
-            {menuItems.map((item) => (
+            {getMenuItems().map((item) => (
               <ListItem key={item.text} disablePadding>
                 <ListItemButton onClick={() => navigate(item.path)}>
                   <ListItemIcon>{item.icon}</ListItemIcon>
