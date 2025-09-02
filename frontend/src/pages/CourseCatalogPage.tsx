@@ -42,7 +42,7 @@ const CourseCatalogPage: React.FC = () => {
   const fetchCourses = async () => {
     try {
       setLoading(true);
-      const data = await courseService.getAllCourses();
+      const data = await courseService.getAllCoursesLegacy();
       setCourses(data);
     } catch (err: any) {
       setError('Failed to load courses');

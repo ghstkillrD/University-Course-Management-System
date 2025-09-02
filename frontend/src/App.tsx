@@ -9,6 +9,7 @@ import CourseCatalogPage from './pages/CourseCatalogPage';
 import RegisterPage from './pages/RegisterPage';
 import TestPage from './pages/TestPage';
 import UserManagementPage from './pages/UserManagementPage';
+import CourseManagementPage from './pages/CourseManagementPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
 const theme = createTheme({
@@ -56,6 +57,11 @@ function App() {
               <Route path="admin/users" element={
                 <ProtectedRoute>
                   <UserManagementPage />
+                </ProtectedRoute>
+              } />
+              <Route path="admin/courses" element={
+                <ProtectedRoute>
+                  <CourseManagementPage />
                 </ProtectedRoute>
               } />
             </Route>
