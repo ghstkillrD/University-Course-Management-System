@@ -50,30 +50,30 @@ export const adminService = {
     });
     if (role) params.append('role', role);
     
-    return api.get<PaginatedResponse<UserResponse>>(`/api/admin/users?${params}`);
+    return api.get<PaginatedResponse<UserResponse>>(`/admin/users?${params}`);
   },
 
   getUserById: (userId: number) => 
-    api.get<UserResponse>(`/api/admin/users/${userId}`),
+    api.get<UserResponse>(`/admin/users/${userId}`),
 
   createUser: (userData: CreateUserRequest) => 
-    api.post<UserResponse>('/api/admin/users', userData),
+    api.post<UserResponse>('/admin/users', userData),
 
   updateUser: (userId: number, userData: CreateUserRequest) => 
-    api.put<UserResponse>(`/api/admin/users/${userId}`, userData),
+    api.put<UserResponse>(`/admin/users/${userId}`, userData),
 
   deleteUser: (userId: number) => 
-    api.delete(`/api/admin/users/${userId}`),
+    api.delete(`/admin/users/${userId}`),
 
   // Student Management
   getAllStudents: (page = 0, size = 10) => 
-    api.get<PaginatedResponse<UserResponse>>(`/api/admin/students?page=${page}&size=${size}`),
+    api.get<PaginatedResponse<UserResponse>>(`/admin/students?page=${page}&size=${size}`),
 
   // Professor Management
   getAllProfessors: (page = 0, size = 10) => 
-    api.get<PaginatedResponse<UserResponse>>(`/api/admin/professors?page=${page}&size=${size}`),
+    api.get<PaginatedResponse<UserResponse>>(`/admin/professors?page=${page}&size=${size}`),
 
   // System Statistics
   getSystemStats: () => 
-    api.get<SystemStats>('/api/admin/stats'),
+    api.get<SystemStats>('/admin/stats'),
 };
