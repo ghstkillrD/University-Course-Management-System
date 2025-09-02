@@ -13,6 +13,18 @@ export interface CreateUserRequest {
   dateOfBirth?: string;
 }
 
+export interface UpdateUserRequest {
+  username: string;
+  password?: string; // Optional for updates
+  role: 'STUDENT' | 'PROFESSOR' | 'ADMIN';
+  name: string;
+  email: string;
+  studentId?: string;
+  employeeId?: string;
+  department?: string;
+  dateOfBirth?: string;
+}
+
 export interface UserResponse {
   id: number;
   username: string;
@@ -60,7 +72,7 @@ export const adminService = {
   createUser: (userData: CreateUserRequest) => 
     api.post<UserResponse>('/admin/users', userData),
 
-  updateUser: (userId: number, userData: CreateUserRequest) => 
+  updateUser: (userId: number, userData: UpdateUserRequest) => 
     api.put<UserResponse>(`/admin/users/${userId}`, userData),
 
   deleteUser: (userId: number) => 

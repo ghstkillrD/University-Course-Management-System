@@ -33,7 +33,7 @@ import {
   Person as PersonIcon,
 } from '@mui/icons-material';
 import { adminService } from '../services/adminService';
-import type { UserResponse, CreateUserRequest, PaginatedResponse } from '../services/adminService';
+import type { UserResponse, CreateUserRequest, UpdateUserRequest, PaginatedResponse } from '../services/adminService';
 
 const UserManagementPage: React.FC = () => {
   const [users, setUsers] = useState<PaginatedResponse<UserResponse>>({
@@ -158,7 +158,22 @@ const UserManagementPage: React.FC = () => {
     event.preventDefault();
     try {
       if (editingUser) {
-        await adminService.updateUser(editingUser.id, formData);
+        // For updates, create UpdateUserRequest without password if empty
+        const updateData: UpdateUserRequest = {
+          username: formData.username,
+          role: formData.role,
+          name: formData.name,
+          email: formData.email,
+          department: formData.department,
+          dateOfBirth: formData.dateOfBirth,
+        };
+        
+        // Only include password if it's provided
+        if (formData.password && formData.password.trim() !== '') {
+          updateData.password = formData.password;
+        }
+        
+        await adminService.updateUser(editingUser.id, updateData);
       } else {
         await adminService.createUser(formData);
       }

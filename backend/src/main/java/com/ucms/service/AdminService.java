@@ -1,6 +1,7 @@
 package com.ucms.service;
 
 import com.ucms.dto.CreateUserRequest;
+import com.ucms.dto.UpdateUserRequest;
 import com.ucms.entity.Professor;
 import com.ucms.entity.Student;
 import com.ucms.entity.User;
@@ -82,6 +83,33 @@ public class AdminService {
                 break;
             case PROFESSOR:
                 updateProfessorProfile(user, request);
+                break;
+            case ADMIN:
+                // Admin doesn't have additional profile
+                break;
+        }
+
+        return userRepository.save(user);
+    }
+
+    @Transactional
+    public User updateUser(Long userId, UpdateUserRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Update base user fields
+        user.setUsername(request.getUsername());
+        if (request.getPassword() != null && !request.getPassword().isEmpty()) {
+            user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        }
+
+        // Update role-specific profile
+        switch (user.getRole()) {
+            case STUDENT:
+                updateStudentProfileFromUpdate(user, request);
+                break;
+            case PROFESSOR:
+                updateProfessorProfileFromUpdate(user, request);
                 break;
             case ADMIN:
                 // Admin doesn't have additional profile
@@ -176,5 +204,33 @@ public class AdminService {
         // Generate a unique employee ID in PROXXXX format  
         long count = userRepository.countByRole(User.Role.PROFESSOR);
         return "PRO" + String.format("%04d", count + 1);
+    }
+
+    private void updateStudentProfileFromUpdate(User user, UpdateUserRequest request) {
+        Student student = studentRepository.findById(user.getId())
+                .orElseThrow(() -> new RuntimeException("Student profile not found"));
+
+        student.setName(request.getName());
+        student.setEmail(request.getEmail());
+        // Note: studentId is not updated as it's auto-generated and should remain constant
+        if (request.getDateOfBirth() != null && !request.getDateOfBirth().isEmpty()) {
+            student.setDateOfBirth(LocalDate.parse(request.getDateOfBirth()));
+        }
+
+        studentRepository.save(student);
+    }
+
+    private void updateProfessorProfileFromUpdate(User user, UpdateUserRequest request) {
+        Professor professor = professorRepository.findById(user.getId())
+                .orElseThrow(() -> new RuntimeException("Professor profile not found"));
+
+        professor.setName(request.getName());
+        professor.setEmail(request.getEmail());
+        // Note: employeeId is not updated as it's auto-generated and should remain constant
+        if (request.getDepartment() != null) {
+            professor.setDepartment(request.getDepartment());
+        }
+
+        professorRepository.save(professor);
     }
 }

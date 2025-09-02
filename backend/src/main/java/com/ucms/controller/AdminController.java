@@ -1,6 +1,7 @@
 package com.ucms.controller;
 
 import com.ucms.dto.CreateUserRequest;
+import com.ucms.dto.UpdateUserRequest;
 import com.ucms.dto.UserResponse;
 import com.ucms.entity.Professor;
 import com.ucms.entity.Student;
@@ -137,7 +138,7 @@ public class AdminController {
     @PutMapping("/users/{userId}")
     public ResponseEntity<?> updateUser(
             @PathVariable Long userId, 
-            @Valid @RequestBody CreateUserRequest request) {
+            @Valid @RequestBody UpdateUserRequest request) {
         try {
             User updatedUser = adminService.updateUser(userId, request);
             return ResponseEntity.ok(convertToUserResponse(updatedUser));
