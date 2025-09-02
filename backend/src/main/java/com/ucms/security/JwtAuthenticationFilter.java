@@ -28,6 +28,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                   HttpServletResponse response, 
                                   FilterChain filterChain) throws ServletException, IOException {
         try {
+            // Skip JWT processing for auth endpoints
+            String requestURI = request.getRequestURI();
+            if (requestURI.contains("/auth/login") || requestURI.contains("/auth/register")) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+            
             String jwt = getJwtFromRequest(request);            if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
                 String username = tokenProvider.getUsernameFromToken(jwt);
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);

@@ -7,6 +7,7 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import CourseCatalogPage from './pages/CourseCatalogPage';
 import RegisterPage from './pages/RegisterPage';
+import TestPage from './pages/TestPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
 const theme = createTheme({
@@ -38,6 +39,7 @@ function App() {
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/test" element={<TestPage />} />
             <Route path="/courses" element={<CourseCatalogPage />} />
             <Route path="/" element={<Layout />}>
               <Route index element={

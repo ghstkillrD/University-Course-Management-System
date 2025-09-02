@@ -18,7 +18,8 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { School, Person, AccessTime } from '@mui/icons-material';
-import { courseService, Course } from '../services/courseService';
+import { courseService } from '../services/courseService';
+import type { Course } from '../types/course';
 import { useAuth } from '../contexts/AuthContext';
 
 const CourseCatalogPage: React.FC = () => {
