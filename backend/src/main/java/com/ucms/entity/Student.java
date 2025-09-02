@@ -27,6 +27,12 @@ public class Student {
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
     
+    @Column(length = 100)
+    private String major;
+    
+    @Column(length = 50)
+    private String year;
+    
     @OneToOne
     @MapsId
     @JoinColumn(name = "id")

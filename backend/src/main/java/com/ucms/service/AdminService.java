@@ -153,6 +153,8 @@ public class AdminService {
         student.setStudentId(generateStudentId()); // Always auto-generate
         student.setName(request.getName());
         student.setEmail(request.getEmail());
+        student.setMajor("Undeclared"); // Default major
+        student.setYear("Freshman"); // Default year
         
         if (request.getDateOfBirth() != null && !request.getDateOfBirth().isEmpty()) {
             student.setDateOfBirth(LocalDate.parse(request.getDateOfBirth()));
@@ -274,7 +276,8 @@ public class AdminService {
         // Update student information
         if (request.getName() != null) student.setName(request.getName());
         if (request.getEmail() != null) student.setEmail(request.getEmail());
-        // Note: Major and year would need to be added to Student entity
+        if (request.getMajor() != null) student.setMajor(request.getMajor());
+        if (request.getYear() != null) student.setYear(request.getYear());
         
         Student savedStudent = studentRepository.save(student);
         return convertToStudentDetailResponse(savedStudent);
@@ -652,8 +655,8 @@ public class AdminService {
         response.setName(student.getName());
         response.setEmail(student.getEmail());
         response.setStudentId(student.getStudentId());
-        response.setMajor("Computer Science"); // Default value since major not in entity
-        response.setYear("Sophomore"); // Default value since year not in entity
+        response.setMajor(student.getMajor() != null ? student.getMajor() : "Undeclared");
+        response.setYear(student.getYear() != null ? student.getYear() : "Freshman");
         response.setStatus("Active"); // Simplified
 
         // Get enrollments

@@ -20,9 +20,15 @@ import {
   Chip,
   IconButton,
   Tooltip,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Snackbar,
+  Alert,
+  Autocomplete,
 } from '@mui/material';
 import {
-  Add,
   Edit,
   Search,
   PersonAdd,
@@ -30,6 +36,7 @@ import {
   Assessment,
 } from '@mui/icons-material';
 import api from '../services/api';
+import { useNavigate } from 'react-router-dom';
 
 interface Student {
   id: number;
@@ -46,11 +53,38 @@ interface Student {
   enrollmentHistory: any[];
 }
 
+interface Course {
+  id: number;
+  code: string;
+  title: string;
+}
+
+interface EditStudentData {
+  name: string;
+  email: string;
+  major: string;
+  year: string;
+}
+
 const StudentManagementPage: React.FC = () => {
+  const navigate = useNavigate();
   const [students, setStudents] = useState<Student[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [enrollDialogOpen, setEnrollDialogOpen] = useState(false);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [enrollmentReason, setEnrollmentReason] = useState('');
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
+  
+  const [editStudentData, setEditStudentData] = useState<EditStudentData>({
+    name: '',
+    email: '',
+    major: '',
+    year: ''
+  });
 
   useEffect(() => {
     fetchStudents();
@@ -91,6 +125,84 @@ const StudentManagementPage: React.FC = () => {
       // Fallback: show empty list rather than mock data to reflect real state
       setStudents([]);
     }
+  };
+
+  const fetchCourses = async () => {
+    try {
+      const response = await api.get('/courses');
+      setCourses(response.data.content || response.data);
+    } catch (error) {
+      console.error('Error fetching courses:', error);
+      setCourses([]);
+    }
+  };
+
+  const handleEditStudent = async () => {
+    if (!selectedStudent) return;
+    
+    try {
+      const updateRequest = {
+        name: editStudentData.name,
+        email: editStudentData.email,
+        major: editStudentData.major,
+        year: editStudentData.year
+      };
+
+      await api.put(`/admin/students/${selectedStudent.id}`, updateRequest);
+      setSnackbar({ open: true, message: 'Student updated successfully!', severity: 'success' });
+      setEditDialogOpen(false);
+      fetchStudents();
+    } catch (error: any) {
+      console.error('Error updating student:', error);
+      setSnackbar({ 
+        open: true, 
+        message: error.response?.data?.message || 'Error updating student', 
+        severity: 'error' 
+      });
+    }
+  };
+
+  const handleForceEnroll = async () => {
+    if (!selectedStudent || !selectedCourse) return;
+    
+    try {
+      await api.post(`/admin/students/${selectedStudent.id}/force-enroll/${selectedCourse.id}`, null, {
+        params: { reason: enrollmentReason || 'Admin override' }
+      });
+      setSnackbar({ open: true, message: 'Student enrolled successfully!', severity: 'success' });
+      setEnrollDialogOpen(false);
+      setSelectedCourse(null);
+      setEnrollmentReason('');
+      fetchStudents();
+    } catch (error: any) {
+      console.error('Error enrolling student:', error);
+      setSnackbar({ 
+        open: true, 
+        message: error.response?.data?.message || 'Error enrolling student', 
+        severity: 'error' 
+      });
+    }
+  };
+
+  const handleGradeManagement = (student: Student) => {
+    navigate('/admin/grades', { state: { studentFilter: student.name } });
+  };
+
+  const openEditDialog = (student: Student) => {
+    setSelectedStudent(student);
+    setEditStudentData({
+      name: student.name,
+      email: student.email,
+      major: student.major,
+      year: student.year
+    });
+    setEditDialogOpen(true);
+  };
+
+  const openEnrollDialog = (student: Student) => {
+    setSelectedStudent(student);
+    setEnrollDialogOpen(true);
+    fetchCourses();
   };
 
   const handleStudentDetails = (student: Student) => {
@@ -164,14 +276,6 @@ const StudentManagementPage: React.FC = () => {
             startAdornment: <Search sx={{ mr: 1, color: 'text.secondary' }} />,
           }}
         />
-
-        <Button
-          variant="contained"
-          startIcon={<Add />}
-          onClick={() => {/* Add new student logic */}}
-        >
-          Add Student
-        </Button>
       </Box>
 
       {/* Students Table */}
@@ -214,17 +318,17 @@ const StudentManagementPage: React.FC = () => {
                     </IconButton>
                   </Tooltip>
                   <Tooltip title="Edit Student">
-                    <IconButton>
+                    <IconButton onClick={() => openEditDialog(student)}>
                       <Edit />
                     </IconButton>
                   </Tooltip>
                   <Tooltip title="Force Enroll">
-                    <IconButton>
+                    <IconButton onClick={() => openEnrollDialog(student)}>
                       <PersonAdd />
                     </IconButton>
                   </Tooltip>
                   <Tooltip title="Grade Management">
-                    <IconButton>
+                    <IconButton onClick={() => handleGradeManagement(student)}>
                       <Grade />
                     </IconButton>
                   </Tooltip>
@@ -288,6 +392,107 @@ const StudentManagementPage: React.FC = () => {
           <Button onClick={() => setDetailsOpen(false)}>Close</Button>
         </DialogActions>
       </Dialog>
+
+      {/* Edit Student Dialog */}
+      <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Edit Student</DialogTitle>
+        <DialogContent>
+          <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <TextField
+              label="Full Name"
+              value={editStudentData.name}
+              onChange={(e) => setEditStudentData({ ...editStudentData, name: e.target.value })}
+              required
+              fullWidth
+            />
+            <TextField
+              label="Email"
+              type="email"
+              value={editStudentData.email}
+              onChange={(e) => setEditStudentData({ ...editStudentData, email: e.target.value })}
+              required
+              fullWidth
+            />
+            <TextField
+              label="Major"
+              value={editStudentData.major}
+              onChange={(e) => setEditStudentData({ ...editStudentData, major: e.target.value })}
+              fullWidth
+            />
+            <FormControl fullWidth>
+              <InputLabel>Year</InputLabel>
+              <Select
+                value={editStudentData.year}
+                onChange={(e) => setEditStudentData({ ...editStudentData, year: e.target.value })}
+                label="Year"
+              >
+                <MenuItem value="Freshman">Freshman</MenuItem>
+                <MenuItem value="Sophomore">Sophomore</MenuItem>
+                <MenuItem value="Junior">Junior</MenuItem>
+                <MenuItem value="Senior">Senior</MenuItem>
+                <MenuItem value="Graduate">Graduate</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleEditStudent} variant="contained">Update Student</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Force Enrollment Dialog */}
+      <Dialog open={enrollDialogOpen} onClose={() => setEnrollDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Force Enroll Student</DialogTitle>
+        <DialogContent>
+          <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {selectedStudent && (
+              <Typography variant="body1">
+                <strong>Student:</strong> {selectedStudent.name} ({selectedStudent.studentId})
+              </Typography>
+            )}
+            <Autocomplete
+              options={courses}
+              getOptionLabel={(course) => `${course.code} - ${course.title}`}
+              value={selectedCourse}
+              onChange={(_, newValue) => setSelectedCourse(newValue)}
+              renderInput={(params) => (
+                <TextField {...params} label="Select Course" required />
+              )}
+            />
+            <TextField
+              label="Reason (optional)"
+              value={enrollmentReason}
+              onChange={(e) => setEnrollmentReason(e.target.value)}
+              multiline
+              rows={3}
+              fullWidth
+              helperText="Provide a reason for this force enrollment"
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEnrollDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleForceEnroll} variant="contained" disabled={!selectedCourse}>
+            Force Enroll
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+      >
+        <Alert 
+          onClose={() => setSnackbar({ ...snackbar, open: false })} 
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
