@@ -29,8 +29,8 @@ public class User {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
     
-    @Column(name = "active")
-    private boolean active = true;
+    @Column(name = "active", nullable = false)
+    private Boolean active = true;
     
     public enum Role {
         STUDENT, PROFESSOR, ADMIN

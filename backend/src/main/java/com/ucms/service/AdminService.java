@@ -115,7 +115,7 @@ public class AdminService {
 
     private void createStudentProfile(User user, CreateUserRequest request) {
         Student student = new Student();
-        student.setId(user.getId());
+        student.setUser(user); // Set the user relationship instead of ID
         student.setStudentId(request.getStudentId() != null ? request.getStudentId() : generateStudentId());
         student.setName(request.getName());
         student.setEmail(request.getEmail());
@@ -129,7 +129,7 @@ public class AdminService {
 
     private void createProfessorProfile(User user, CreateUserRequest request) {
         Professor professor = new Professor();
-        professor.setId(user.getId());
+        professor.setUser(user); // Set the user relationship instead of ID
         professor.setEmployeeId(request.getEmployeeId() != null ? request.getEmployeeId() : generateEmployeeId());
         professor.setName(request.getName());
         professor.setEmail(request.getEmail());

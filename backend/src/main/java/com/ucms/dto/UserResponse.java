@@ -12,7 +12,7 @@ public class UserResponse {
     private String employeeId;     // For professors
     private String department;     // For professors
     private LocalDateTime createdAt;
-    private boolean active;
+    private Boolean active;
 
     // Constructors
     public UserResponse() {}
@@ -90,11 +90,11 @@ public class UserResponse {
         this.createdAt = createdAt;
     }
 
-    public boolean isActive() {
+    public Boolean isActive() {
         return active;
     }
 
-    public void setActive(boolean active) {
+    public void setActive(Boolean active) {
         this.active = active;
     }
 }
