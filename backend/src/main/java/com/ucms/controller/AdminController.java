@@ -235,6 +235,7 @@ public class AdminController {
                     response.setName(student.getName());
                     response.setEmail(student.getEmail());
                     response.setStudentId(student.getStudentId());
+                    response.setDateOfBirth(student.getDateOfBirth());
                 } else {
                     response.setName("Student Profile Missing");
                     response.setEmail("");

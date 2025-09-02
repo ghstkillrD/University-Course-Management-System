@@ -128,6 +128,7 @@ const UserManagementPage: React.FC = () => {
         name: selectedUser.name,
         email: selectedUser.email,
         department: selectedUser.department,
+        dateOfBirth: selectedUser.dateOfBirth,
       });
       setOpenDialog(true);
     }

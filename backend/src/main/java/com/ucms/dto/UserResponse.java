@@ -1,5 +1,6 @@
 package com.ucms.dto;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class UserResponse {
@@ -11,6 +12,7 @@ public class UserResponse {
     private String studentId;      // For students
     private String employeeId;     // For professors
     private String department;     // For professors
+    private LocalDate dateOfBirth; // For students
     private LocalDateTime createdAt;
     private Boolean active;
 
@@ -80,6 +82,14 @@ public class UserResponse {
 
     public void setDepartment(String department) {
         this.department = department;
+    }
+
+    public LocalDate getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void setDateOfBirth(LocalDate dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
     }
 
     public LocalDateTime getCreatedAt() {

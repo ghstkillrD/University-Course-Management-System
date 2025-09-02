@@ -22,6 +22,7 @@ export interface UserResponse {
   studentId?: string;
   employeeId?: string;
   department?: string;
+  dateOfBirth?: string;
   createdAt: string;
   active: boolean;
 }
