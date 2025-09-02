@@ -373,6 +373,18 @@ const UserManagementPage: React.FC = () => {
           </DialogTitle>
           <DialogContent>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+              <FormControl fullWidth required>
+                <InputLabel>Role</InputLabel>
+                <Select
+                  value={formData.role}
+                  label="Role"
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
+                >
+                  <MenuItem value="STUDENT">Student</MenuItem>
+                  <MenuItem value="PROFESSOR">Professor</MenuItem>
+                  <MenuItem value="ADMIN">Administrator</MenuItem>
+                </Select>
+              </FormControl>
               <TextField
                 required
                 label="Username"
@@ -403,18 +415,6 @@ const UserManagementPage: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 fullWidth
               />
-              <FormControl fullWidth required>
-                <InputLabel>Role</InputLabel>
-                <Select
-                  value={formData.role}
-                  label="Role"
-                  onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
-                >
-                  <MenuItem value="STUDENT">Student</MenuItem>
-                  <MenuItem value="PROFESSOR">Professor</MenuItem>
-                  <MenuItem value="ADMIN">Administrator</MenuItem>
-                </Select>
-              </FormControl>
 
               {formData.role === 'STUDENT' && (
                 <>
