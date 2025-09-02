@@ -140,9 +140,10 @@ public class CourseService {
             return coursePage.map(this::convertToResponse);
         }
         
-        List<Course> courses = courseRepository.findByTitleContainingIgnoreCase(search.trim());
-        // For simplicity, convert to Page manually (in production, you'd want a proper paginated search)
-        return courseRepository.findAll(pageable).map(this::convertToResponse);
+        // Use the new repository method to search by both code and title
+        Page<Course> coursePage = courseRepository.findByCodeContainingIgnoreCaseOrTitleContainingIgnoreCase(
+            search.trim(), pageable);
+        return coursePage.map(this::convertToResponse);
     }
 
     private CourseResponse convertToResponse(Course course) {
