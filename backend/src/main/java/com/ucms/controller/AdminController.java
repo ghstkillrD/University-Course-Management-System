@@ -46,19 +46,28 @@ public class AdminController {
     // ===============================
 
     /**
-     * Get all users with optional role filtering
+     * Get all users with optional role filtering and search
      */
     @GetMapping("/users")
     public ResponseEntity<?> getAllUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String role) {
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) String search) {
         
         try {
             Pageable pageable = PageRequest.of(page, size);
             Page<User> users;
             
-            if (role != null && !role.isEmpty()) {
+            if (search != null && !search.trim().isEmpty()) {
+                // Search by name, username, or ID
+                if (role != null && !role.isEmpty()) {
+                    User.Role userRole = User.Role.valueOf(role.toUpperCase());
+                    users = userRepository.findByRoleAndSearch(userRole, search.trim(), pageable);
+                } else {
+                    users = userRepository.findBySearch(search.trim(), pageable);
+                }
+            } else if (role != null && !role.isEmpty()) {
                 User.Role userRole = User.Role.valueOf(role.toUpperCase());
                 users = userRepository.findByRole(userRole, pageable);
             } else {

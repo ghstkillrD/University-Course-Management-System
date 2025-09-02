@@ -56,12 +56,13 @@ export interface SystemStats {
 
 export const adminService = {
   // User Management
-  getAllUsers: (page = 0, size = 10, role?: string) => {
+  getAllUsers: (page = 0, size = 10, role?: string, search?: string) => {
     const params = new URLSearchParams({
       page: page.toString(),
       size: size.toString(),
     });
     if (role) params.append('role', role);
+    if (search) params.append('search', search);
     
     return api.get<PaginatedResponse<UserResponse>>(`/admin/users?${params}`);
   },

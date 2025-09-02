@@ -24,6 +24,7 @@ import {
   FormControl,
   InputLabel,
   Alert,
+  InputAdornment,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -31,6 +32,8 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   Person as PersonIcon,
+  Search as SearchIcon,
+  Clear as ClearIcon,
 } from '@mui/icons-material';
 import { adminService } from '../services/adminService';
 import type { UserResponse, CreateUserRequest, UpdateUserRequest, PaginatedResponse } from '../services/adminService';
@@ -48,6 +51,7 @@ const UserManagementPage: React.FC = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [roleFilter, setRoleFilter] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState<string>('');
   
   // Dialog states
   const [openDialog, setOpenDialog] = useState(false);
@@ -66,12 +70,12 @@ const UserManagementPage: React.FC = () => {
 
   useEffect(() => {
     fetchUsers();
-  }, [page, rowsPerPage, roleFilter]);
+  }, [page, rowsPerPage, roleFilter, searchQuery]);
 
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await adminService.getAllUsers(page, rowsPerPage, roleFilter);
+      const response = await adminService.getAllUsers(page, rowsPerPage, roleFilter, searchQuery);
       setUsers(response.data);
       setError(null);
     } catch (err) {
@@ -93,6 +97,16 @@ const UserManagementPage: React.FC = () => {
 
   const handleRoleFilterChange = (event: any) => {
     setRoleFilter(event.target.value);
+    setPage(0);
+  };
+
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value);
+    setPage(0);
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery('');
     setPage(0);
   };
 
@@ -224,19 +238,49 @@ const UserManagementPage: React.FC = () => {
 
       <Paper>
         <Box p={2}>
-          <FormControl size="small" sx={{ minWidth: 120 }}>
-            <InputLabel>Filter by Role</InputLabel>
-            <Select
-              value={roleFilter}
-              label="Filter by Role"
-              onChange={handleRoleFilterChange}
-            >
-              <MenuItem value="">All Roles</MenuItem>
-              <MenuItem value="STUDENT">Students</MenuItem>
-              <MenuItem value="PROFESSOR">Professors</MenuItem>
-              <MenuItem value="ADMIN">Admins</MenuItem>
-            </Select>
-          </FormControl>
+          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+            <FormControl size="small" sx={{ minWidth: 120 }}>
+              <InputLabel>Filter by Role</InputLabel>
+              <Select
+                value={roleFilter}
+                label="Filter by Role"
+                onChange={handleRoleFilterChange}
+              >
+                <MenuItem value="">All Roles</MenuItem>
+                <MenuItem value="STUDENT">Students</MenuItem>
+                <MenuItem value="PROFESSOR">Professors</MenuItem>
+                <MenuItem value="ADMIN">Admins</MenuItem>
+              </Select>
+            </FormControl>
+            
+            <TextField
+              value={searchQuery}
+              onChange={handleSearchChange}
+              placeholder="Search by Name/Username/ID"
+              variant="outlined"
+              size="small"
+              sx={{ minWidth: 300 }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+                endAdornment: searchQuery && (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="clear search"
+                      onClick={handleClearSearch}
+                      edge="end"
+                      size="small"
+                    >
+                      <ClearIcon />
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Box>
         </Box>
 
         <TableContainer>
