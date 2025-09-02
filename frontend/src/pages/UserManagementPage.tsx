@@ -393,14 +393,6 @@ const UserManagementPage: React.FC = () => {
                 fullWidth
               />
               <TextField
-                required={!editingUser}
-                type="password"
-                label={editingUser ? 'New Password (leave empty to keep current)' : 'Password'}
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                fullWidth
-              />
-              <TextField
                 required
                 label="Full Name"
                 value={formData.name}
@@ -413,6 +405,14 @@ const UserManagementPage: React.FC = () => {
                 label="Email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                fullWidth
+              />
+              <TextField
+                required={!editingUser}
+                type="password"
+                label={editingUser ? 'New Password (leave empty to keep current)' : 'Password'}
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 fullWidth
               />
 
