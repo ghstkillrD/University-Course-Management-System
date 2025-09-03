@@ -16,6 +16,7 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     List<Enrollment> findByStudentId(Long studentId);
     List<Enrollment> findByCourse(Course course);
     List<Enrollment> findByCourseId(Long courseId);
+    List<Enrollment> findByCourseIdOrderByEnrollmentDateDesc(Long courseId);
     Optional<Enrollment> findByStudentAndCourse(Student student, Course course);
     Optional<Enrollment> findByStudentIdAndCourseId(Long studentId, Long courseId);
     
@@ -24,4 +25,8 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     
     @Query("SELECT COUNT(e) FROM Enrollment e WHERE e.course.id = :courseId")
     Long countEnrollmentsByCourseId(@Param("courseId") Long courseId);
+    
+    // Additional methods for professor service
+    int countByCourseId(Long courseId);
+    int countByCourseIdAndGradeIsNull(Long courseId);
 }

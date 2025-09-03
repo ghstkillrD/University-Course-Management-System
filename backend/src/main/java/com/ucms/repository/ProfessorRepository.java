@@ -10,6 +10,7 @@ import java.util.List;
 public interface ProfessorRepository extends JpaRepository<Professor, Long> {
     Optional<Professor> findByEmployeeId(String employeeId);
     Optional<Professor> findByEmail(String email);
+    Optional<Professor> findByUserId(Long userId);
     List<Professor> findByDepartment(String department);
     boolean existsByEmployeeId(String employeeId);
     boolean existsByEmail(String email);

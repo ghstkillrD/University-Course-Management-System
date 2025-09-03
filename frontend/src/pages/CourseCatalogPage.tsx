@@ -15,9 +15,11 @@ import {
   Chip,
   Alert,
   CircularProgress,
+  Snackbar,
 } from '@mui/material';
 import { School, Person, AccessTime } from '@mui/icons-material';
 import { courseService } from '../services/courseService';
+import { enrollmentService } from '../services/enrollmentService';
 import type { Course } from '../types/course';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -28,6 +30,8 @@ const CourseCatalogPage: React.FC = () => {
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSemester, setSelectedSemester] = useState('');
+  const [enrollmentLoading, setEnrollmentLoading] = useState<number | null>(null);
+  const [successMessage, setSuccessMessage] = useState('');
   const { user, isAuthenticated } = useAuth();
 
   useEffect(() => {
@@ -72,6 +76,35 @@ const CourseCatalogPage: React.FC = () => {
     return [...new Set(semesters)];
   };
 
+  const handleEnrollment = async (courseId: number) => {
+    if (!isAuthenticated || user?.role !== 'STUDENT') {
+      setError('Only students can enroll in courses');
+      return;
+    }
+
+    try {
+      setEnrollmentLoading(courseId);
+      setError('');
+      
+      await enrollmentService.enrollInCourse(courseId);
+      
+      // Update the course in the local state to reflect enrollment
+      setCourses(prevCourses => 
+        prevCourses.map(course => 
+          course.id === courseId 
+            ? { ...course, availableSeats: course.availableSeats - 1 }
+            : course
+        )
+      );
+      
+      setSuccessMessage('Successfully enrolled in course!');
+    } catch (err: any) {
+      setError(err.response?.data?.message || err.message || 'Failed to enroll in course');
+    } finally {
+      setEnrollmentLoading(null);
+    }
+  };
+
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
@@ -86,7 +119,8 @@ const CourseCatalogPage: React.FC = () => {
         Course Catalog
       </Typography>
 
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {error && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>{error}</Alert>}
+      {successMessage && <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccessMessage('')}>{successMessage}</Alert>}
 
       {/* Filters */}
       <Box sx={{ mb: 3 }}>
@@ -181,9 +215,16 @@ const CourseCatalogPage: React.FC = () => {
                   <Button 
                     size="small" 
                     variant="contained" 
-                    disabled={course.availableSeats === 0}
+                    disabled={course.availableSeats === 0 || enrollmentLoading === course.id}
+                    onClick={() => handleEnrollment(course.id)}
+                    startIcon={enrollmentLoading === course.id ? <CircularProgress size={16} /> : <School />}
                   >
-                    {course.availableSeats === 0 ? 'Full' : 'Register'}
+                    {enrollmentLoading === course.id 
+                      ? 'Enrolling...' 
+                      : course.availableSeats === 0 
+                        ? 'Full' 
+                        : 'Register'
+                    }
                   </Button>
                 ) : (
                   <Button size="small" variant="outlined">

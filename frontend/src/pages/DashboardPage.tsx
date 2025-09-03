@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Grid,
@@ -7,12 +7,45 @@ import {
   Card,
   CardContent,
   Button,
+  CircularProgress,
+  Alert,
 } from '@mui/material';
 import { School, Assignment, Grade, Person } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
+import { enrollmentService } from '../services/enrollmentService';
+import type { StudentScheduleResponse } from '../services/enrollmentService';
+import { useNavigate } from 'react-router-dom';
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const [studentData, setStudentData] = useState<StudentScheduleResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    // Redirect professors to their specific dashboard
+    if (user?.role === 'PROFESSOR') {
+      navigate('/professor/dashboard');
+      return;
+    }
+    
+    if (user?.role === 'STUDENT') {
+      fetchStudentData();
+    }
+  }, [user, navigate]);
+
+  const fetchStudentData = async () => {
+    try {
+      setLoading(true);
+      const data = await enrollmentService.getMySchedule();
+      setStudentData(data);
+    } catch (err: any) {
+      setError('Failed to load student data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getDashboardContent = () => {
     switch (user?.role) {
@@ -26,6 +59,7 @@ const DashboardPage: React.FC = () => {
               <Typography variant="subtitle1" color="text.secondary">
                 Welcome back, {user.name}!
               </Typography>
+              {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
             </Grid>
             
             <Grid item xs={12} sm={6} md={3}>
@@ -34,7 +68,7 @@ const DashboardPage: React.FC = () => {
                   <Box display="flex" alignItems="center">
                     <School color="primary" sx={{ mr: 2 }} />
                     <Box>
-                      <Typography variant="h6">5</Typography>
+                      <Typography variant="h6">{loading ? '...' : (studentData?.enrollments.length || 0)}</Typography>
                       <Typography variant="body2" color="text.secondary">
                         Enrolled Courses
                       </Typography>
@@ -48,7 +82,7 @@ const DashboardPage: React.FC = () => {
                   <Box display="flex" alignItems="center">
                     <Grade color="primary" sx={{ mr: 2 }} />
                     <Box>
-                      <Typography variant="h6">3.7</Typography>
+                      <Typography variant="h6">{loading ? '...' : (studentData?.gpa?.toFixed(2) || 'N/A')}</Typography>
                       <Typography variant="body2" color="text.secondary">
                         Current GPA
                       </Typography>
@@ -64,7 +98,7 @@ const DashboardPage: React.FC = () => {
                   <Box display="flex" alignItems="center">
                     <Assignment color="primary" sx={{ mr: 2 }} />
                     <Box>
-                      <Typography variant="h6">15</Typography>
+                      <Typography variant="h6">{loading ? '...' : (studentData?.totalCredits || 0)}</Typography>
                       <Typography variant="body2" color="text.secondary">
                         Total Credits
                       </Typography>
@@ -80,13 +114,13 @@ const DashboardPage: React.FC = () => {
                   Quick Actions
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                  <Button variant="contained" startIcon={<School />}>
+                  <Button variant="contained" startIcon={<School />} onClick={() => navigate('/courses')}>
                     Browse Courses
                   </Button>
-                  <Button variant="outlined" startIcon={<Assignment />}>
+                  <Button variant="outlined" startIcon={<Assignment />} onClick={() => navigate('/schedule')}>
                     View Schedule
                   </Button>
-                  <Button variant="outlined" startIcon={<Grade />}>
+                  <Button variant="outlined" startIcon={<Grade />} onClick={() => navigate('/transcript')}>
                     Check Grades
                   </Button>
                 </Box>

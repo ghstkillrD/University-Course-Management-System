@@ -29,6 +29,97 @@ public class EnrollmentService {
     @Autowired
     private CourseRepository courseRepository;
 
+    @Autowired
+    private AuthService authService;
+
+    // Student enroll in course
+    public EnrollmentResponse enrollStudent(Long courseId) {
+        // Get current student
+        UserInfo currentUser = authService.getCurrentUserInfo();
+        if (!"STUDENT".equals(currentUser.getRole())) {
+            throw new RuntimeException("Only students can enroll in courses");
+        }
+
+        Student student = studentRepository.findById(currentUser.getProfileId())
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+        
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found with id: " + courseId));
+
+        // Check if already enrolled
+        Optional<Enrollment> existingEnrollment = enrollmentRepository.findByStudentIdAndCourseId(student.getId(), courseId);
+        if (existingEnrollment.isPresent()) {
+            throw new RuntimeException("You are already enrolled in this course");
+        }
+
+        // Check course capacity
+        if (course.getAvailableSeats() <= 0) {
+            throw new RuntimeException("Course is full. No available seats.");
+        }
+
+        // Create new enrollment
+        Enrollment enrollment = new Enrollment();
+        enrollment.setStudent(student);
+        enrollment.setCourse(course);
+        enrollment.setEnrollmentDate(LocalDateTime.now());
+
+        // Update course available seats
+        course.setAvailableSeats(course.getAvailableSeats() - 1);
+        courseRepository.save(course);
+
+        Enrollment savedEnrollment = enrollmentRepository.save(enrollment);
+        return convertToResponse(savedEnrollment);
+    }
+
+    // Student drop course
+    public void dropCourse(Long courseId) {
+        // Get current student
+        UserInfo currentUser = authService.getCurrentUserInfo();
+        if (!"STUDENT".equals(currentUser.getRole())) {
+            throw new RuntimeException("Only students can drop courses");
+        }
+
+        Enrollment enrollment = enrollmentRepository.findByStudentIdAndCourseId(currentUser.getProfileId(), courseId)
+                .orElseThrow(() -> new RuntimeException("You are not enrolled in this course"));
+
+        Course course = enrollment.getCourse();
+        course.setAvailableSeats(course.getAvailableSeats() + 1);
+        courseRepository.save(course);
+
+        enrollmentRepository.delete(enrollment);
+    }
+
+    // Get current student's schedule
+    public StudentScheduleResponse getStudentSchedule() {
+        UserInfo currentUser = authService.getCurrentUserInfo();
+        if (!"STUDENT".equals(currentUser.getRole())) {
+            throw new RuntimeException("Only students can view schedules");
+        }
+
+        List<Enrollment> enrollments = enrollmentRepository.findByStudentId(currentUser.getProfileId());
+        List<EnrollmentResponse> enrollmentResponses = enrollments.stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+
+        // Calculate total credits (assuming each course is 3 credits)
+        int totalCredits = enrollments.size() * 3;
+
+        // Calculate GPA if there are graded courses
+        Double gpa = calculateGPA(enrollments);
+
+        return new StudentScheduleResponse(enrollmentResponses, totalCredits, gpa);
+    }
+
+    // Get current student's transcript
+    public StudentTranscriptResponse getStudentTranscript() {
+        UserInfo currentUser = authService.getCurrentUserInfo();
+        if (!"STUDENT".equals(currentUser.getRole())) {
+            throw new RuntimeException("Only students can view transcripts");
+        }
+
+        return getStudentTranscript(currentUser.getProfileId());
+    }
+
     // Get all enrollments with pagination
     public Page<EnrollmentResponse> getAllEnrollments(int page, int size, String sortBy, String sortDir) {
         Sort sort = sortDir.equalsIgnoreCase("desc") ? 
@@ -330,5 +421,21 @@ public class EnrollmentService {
             case "F": return 0.0;
             default: return 0.0;
         }
+    }
+
+    // Helper method to calculate GPA
+    private Double calculateGPA(List<Enrollment> enrollments) {
+        double totalGradePoints = 0;
+        int totalCredits = 0;
+
+        for (Enrollment enrollment : enrollments) {
+            if (enrollment.getGrade() != null) {
+                totalGradePoints += getGradePoints(enrollment.getGrade()) * 3; // 3 credits per course
+                totalCredits += 3;
+            }
+        }
+
+        if (totalCredits == 0) return null;
+        return Math.round((totalGradePoints / totalCredits) * 100.0) / 100.0;
     }
 }

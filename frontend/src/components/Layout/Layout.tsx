@@ -58,9 +58,14 @@ const Layout: React.FC = () => {
     ];
 
     if (user?.role === 'STUDENT') {
-      baseItems.push({ text: 'My Courses', icon: <MenuBook />, path: '/my-courses' });
+      baseItems.push(
+        { text: 'My Schedule', icon: <MenuBook />, path: '/schedule' },
+        { text: 'My Transcript', icon: <Grade />, path: '/transcript' }
+      );
     } else if (user?.role === 'PROFESSOR') {
-      baseItems.push({ text: 'My Courses', icon: <MenuBook />, path: '/my-courses' });
+      baseItems.push(
+        { text: 'Professor Dashboard', icon: <Person />, path: '/professor/dashboard' }
+      );
     } else if (user?.role === 'ADMIN') {
       baseItems.push(
         { text: 'Manage Courses', icon: <School />, path: '/admin/courses' },

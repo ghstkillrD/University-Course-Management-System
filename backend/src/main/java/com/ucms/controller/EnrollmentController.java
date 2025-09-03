@@ -19,6 +19,38 @@ public class EnrollmentController {
     @Autowired
     private EnrollmentService enrollmentService;
 
+    // Student enrollment in course
+    @PostMapping("/enroll")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<EnrollmentResponse> enrollInCourse(@RequestBody EnrollmentRequest request) {
+        EnrollmentResponse enrollment = enrollmentService.enrollStudent(request.getCourseId());
+        return ResponseEntity.ok(enrollment);
+    }
+
+    // Student drop course
+    @DeleteMapping("/drop/{courseId}")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<Void> dropCourse(@PathVariable Long courseId) {
+        enrollmentService.dropCourse(courseId);
+        return ResponseEntity.ok().build();
+    }
+
+    // Get current student's schedule
+    @GetMapping("/my-schedule")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<StudentScheduleResponse> getMySchedule() {
+        StudentScheduleResponse schedule = enrollmentService.getStudentSchedule();
+        return ResponseEntity.ok(schedule);
+    }
+
+    // Get current student's transcript
+    @GetMapping("/my-transcript")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<StudentTranscriptResponse> getMyTranscript() {
+        StudentTranscriptResponse transcript = enrollmentService.getStudentTranscript();
+        return ResponseEntity.ok(transcript);
+    }
+
     // Get all enrollments with pagination (Admin only)
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
