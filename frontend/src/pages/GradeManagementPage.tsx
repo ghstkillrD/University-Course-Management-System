@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   Box,
   Card,
@@ -66,12 +67,26 @@ interface Assignment {
 }
 
 const GradeManagementPage: React.FC = () => {
+  const location = useLocation();
   const [grades, setGrades] = useState<GradeEntry[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [courseFilter, setCourseFilter] = useState('ALL');
   const [semesterFilter, setSemesterFilter] = useState('ALL');
   const [selectedGrade, setSelectedGrade] = useState<GradeEntry | null>(null);
   const [gradeDialogOpen, setGradeDialogOpen] = useState(false);
+
+  // Initialize filters from location state if provided
+  useEffect(() => {
+    const state = location.state as any;
+    if (state) {
+      if (state.studentFilter) {
+        setSearchTerm(state.studentFilter);
+      }
+      if (state.courseFilter) {
+        setCourseFilter(state.courseFilter);
+      }
+    }
+  }, [location.state]);
 
   useEffect(() => {
     fetchGrades();

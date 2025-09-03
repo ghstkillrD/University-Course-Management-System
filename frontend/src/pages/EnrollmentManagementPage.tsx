@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Card,
@@ -57,6 +58,7 @@ interface Enrollment {
 }
 
 const EnrollmentManagementPage: React.FC = () => {
+  const navigate = useNavigate();
   const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -139,6 +141,17 @@ const EnrollmentManagementPage: React.FC = () => {
     } catch (error) {
       console.error('Error updating enrollment status:', error);
     }
+  };
+
+  const handleGradeAssessment = (enrollment: Enrollment) => {
+    // Navigate to Grade Management page with filters for this specific enrollment
+    navigate('/admin/grades', { 
+      state: { 
+        studentFilter: enrollment.studentName,
+        courseFilter: enrollment.courseCode,
+        enrollmentId: enrollment.id
+      } 
+    });
   };
 
   const getStatusColor = (status: string) => {
@@ -345,7 +358,7 @@ const EnrollmentManagementPage: React.FC = () => {
                     </IconButton>
                   </Tooltip>
                   <Tooltip title="Grade Assessment">
-                    <IconButton>
+                    <IconButton onClick={() => handleGradeAssessment(enrollment)}>
                       <Assessment />
                     </IconButton>
                   </Tooltip>
