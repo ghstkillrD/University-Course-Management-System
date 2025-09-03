@@ -60,12 +60,25 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
-                .anyRequest().permitAll()
+                // Public endpoints
+                .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/test/**").permitAll()
+                .requestMatchers("/courses", "/courses/**").permitAll() // Course catalog is public
+                
+                // Admin only endpoints
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                
+                // Protected endpoints - require authentication
+                .requestMatchers("/enrollments/**").authenticated()
+                .requestMatchers("/grades/**").authenticated()
+                
+                // All other requests require authentication
+                .anyRequest().authenticated()
             );
 
         http.authenticationProvider(authenticationProvider());
-        // Temporarily disable JWT filter
-        // http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+        // Enable JWT filter
+        http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

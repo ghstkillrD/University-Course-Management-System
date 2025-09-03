@@ -94,6 +94,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       dispatch({ type: 'LOGIN_START' });
       const response = await authService.login({ username, password });
       
+      if (!response || !response.token) {
+        throw new Error('Invalid login response');
+      }
+      
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
       
@@ -102,8 +106,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         payload: { user: response.user, token: response.token },
       });
     } catch (error) {
+      console.error('AuthContext login error:', error);
       dispatch({ type: 'LOGIN_FAILURE' });
-      throw error;
+      
+      // Clean up any stored data on failed login
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      
+      // Always throw an error so the LoginPage can catch it
+      throw new Error('Authentication failed');
     }
   };
 

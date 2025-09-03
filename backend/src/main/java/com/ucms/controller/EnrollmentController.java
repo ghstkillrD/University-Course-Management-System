@@ -6,6 +6,7 @@ import com.ucms.service.EnrollmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,8 +19,9 @@ public class EnrollmentController {
     @Autowired
     private EnrollmentService enrollmentService;
 
-    // Get all enrollments with pagination
+    // Get all enrollments with pagination (Admin only)
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<EnrollmentResponse>> getAllEnrollments(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -29,15 +31,17 @@ public class EnrollmentController {
         return ResponseEntity.ok(enrollments);
     }
 
-    // Get enrollments by student ID
+    // Get enrollments by student ID (Student own data + Admin)
     @GetMapping("/student/{studentId}")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('STUDENT') and #studentId == authentication.principal.profileId)")
     public ResponseEntity<List<EnrollmentResponse>> getEnrollmentsByStudent(@PathVariable Long studentId) {
         List<EnrollmentResponse> enrollments = enrollmentService.getEnrollmentsByStudentId(studentId);
         return ResponseEntity.ok(enrollments);
     }
 
-    // Get enrollments by course ID
+    // Get enrollments by course ID (Professor teaching course + Admin)
     @GetMapping("/course/{courseId}")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('PROFESSOR') and @courseService.isProfessorTeachingCourse(authentication.principal.profileId, #courseId))")
     public ResponseEntity<List<EnrollmentResponse>> getEnrollmentsByCourse(@PathVariable Long courseId) {
         List<EnrollmentResponse> enrollments = enrollmentService.getEnrollmentsByCourseId(courseId);
         return ResponseEntity.ok(enrollments);
@@ -45,6 +49,7 @@ public class EnrollmentController {
 
     // Force enroll student (admin override)
     @PostMapping("/force-enroll")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<EnrollmentResponse> forceEnrollStudent(@RequestBody ForceEnrollmentRequest request) {
         EnrollmentResponse enrollment = enrollmentService.forceEnrollStudent(request.getStudentId(), request.getCourseId());
         return ResponseEntity.ok(enrollment);
@@ -52,13 +57,15 @@ public class EnrollmentController {
 
     // Drop student from course (admin override)
     @DeleteMapping("/force-drop/{studentId}/{courseId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> forceDropStudent(@PathVariable Long studentId, @PathVariable Long courseId) {
         enrollmentService.forceDropStudent(studentId, courseId);
         return ResponseEntity.ok().build();
     }
 
-    // Update grade for enrollment
+    // Update grade for enrollment (Professor teaching course + Admin)
     @PutMapping("/{enrollmentId}/grade")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('PROFESSOR') and @enrollmentService.isProfessorTeachingEnrollment(authentication.principal.profileId, #enrollmentId))")
     public ResponseEntity<EnrollmentResponse> updateGrade(
             @PathVariable Long enrollmentId, 
             @RequestBody UpdateGradeRequest request) {
@@ -66,15 +73,17 @@ public class EnrollmentController {
         return ResponseEntity.ok(enrollment);
     }
 
-    // Get student transcript
+    // Get student transcript (Student own data + Admin)
     @GetMapping("/transcript/{studentId}")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('STUDENT') and #studentId == authentication.principal.profileId)")
     public ResponseEntity<StudentTranscriptResponse> getStudentTranscript(@PathVariable Long studentId) {
         StudentTranscriptResponse transcript = enrollmentService.getStudentTranscript(studentId);
         return ResponseEntity.ok(transcript);
     }
 
-    // Search enrollments
+    // Search enrollments (Admin only)
     @GetMapping("/search")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<EnrollmentResponse>> searchEnrollments(
             @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "0") int page,
@@ -83,15 +92,17 @@ public class EnrollmentController {
         return ResponseEntity.ok(enrollments);
     }
 
-    // Get enrollment statistics
+    // Get enrollment statistics (Admin only)
     @GetMapping("/stats")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<EnrollmentStatsResponse> getEnrollmentStats() {
         EnrollmentStatsResponse stats = enrollmentService.getEnrollmentStats();
         return ResponseEntity.ok(stats);
     }
 
-    // Get course enrollment details
+    // Get course enrollment details (Professor teaching course + Admin)
     @GetMapping("/course/{courseId}/details")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('PROFESSOR') and @courseService.isProfessorTeachingCourse(authentication.principal.profileId, #courseId))")
     public ResponseEntity<CourseEnrollmentDetailsResponse> getCourseEnrollmentDetails(@PathVariable Long courseId) {
         CourseEnrollmentDetailsResponse details = enrollmentService.getCourseEnrollmentDetails(courseId);
         return ResponseEntity.ok(details);

@@ -18,6 +18,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 public class AuthService {
 
@@ -91,7 +93,45 @@ public class AuthService {
     }
 
     public UserInfo getCurrentUserInfo() {
-        // Implementation will be added based on SecurityContext
-        return null; // Placeholder
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && 
+            !authentication.getPrincipal().equals("anonymousUser")) {
+            
+            String username = authentication.getName();
+            Optional<User> userOptional = userRepository.findByUsername(username);
+            
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                
+                // Get role-specific information
+                String name = "Unknown";
+                String email = "";
+                
+                if (user.getRole() == User.Role.STUDENT) {
+                    Optional<Student> student = studentRepository.findById(user.getId());
+                    if (student.isPresent()) {
+                        name = student.get().getName();
+                        email = student.get().getEmail();
+                    }
+                } else if (user.getRole() == User.Role.PROFESSOR) {
+                    // Get professor details if needed
+                    name = "Professor " + user.getUsername();
+                    email = user.getUsername() + "@university.edu";
+                } else if (user.getRole() == User.Role.ADMIN) {
+                    name = "Admin " + user.getUsername();
+                    email = user.getUsername() + "@university.edu";
+                }
+                
+                return new UserInfo(
+                    user.getId(),
+                    user.getUsername(),
+                    user.getRole(),
+                    user.getId(),  // Using user ID as external ID
+                    name,
+                    email
+                );
+            }
+        }
+        return null;
     }
 }

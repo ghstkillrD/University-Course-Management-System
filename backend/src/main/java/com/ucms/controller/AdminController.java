@@ -26,7 +26,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/admin")
 @CrossOrigin(origins = "*")
-// @PreAuthorize("hasRole('ADMIN')") // Commented out for testing - enable later
+@PreAuthorize("hasRole('ADMIN')") // Enable admin-only access
 public class AdminController {
 
     @Autowired

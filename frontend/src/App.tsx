@@ -59,32 +59,32 @@ function App() {
                 </ProtectedRoute>
               } />
               <Route path="admin/users" element={
-                <ProtectedRoute>
+                <ProtectedRoute requiredRole="ADMIN">
                   <UserManagementPage />
                 </ProtectedRoute>
               } />
               <Route path="admin/courses" element={
-                <ProtectedRoute>
+                <ProtectedRoute requiredRole="ADMIN">
                   <CourseManagementPage />
                 </ProtectedRoute>
               } />
               <Route path="admin/students" element={
-                <ProtectedRoute>
+                <ProtectedRoute requiredRole="ADMIN">
                   <StudentManagementPage />
                 </ProtectedRoute>
               } />
               <Route path="admin/enrollments" element={
-                <ProtectedRoute>
+                <ProtectedRoute requiredRole="ADMIN">
                   <EnrollmentManagementPage />
                 </ProtectedRoute>
               } />
               <Route path="admin/grades" element={
-                <ProtectedRoute>
+                <ProtectedRoute requiredRole="ADMIN">
                   <GradeManagementPage />
                 </ProtectedRoute>
               } />
               <Route path="admin/analytics" element={
-                <ProtectedRoute>
+                <ProtectedRoute requiredRole="ADMIN">
                   <SystemAnalyticsPage />
                 </ProtectedRoute>
               } />

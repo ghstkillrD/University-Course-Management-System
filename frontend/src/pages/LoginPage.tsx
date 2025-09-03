@@ -24,10 +24,24 @@ const LoginPage: React.FC = () => {
     setError('');
 
     try {
-      await login(username, password);
+      // Set a timeout to show error if login takes too long or fails silently
+      const loginPromise = login(username, password);
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Login timeout')), 10000)
+      );
+      
+      await Promise.race([loginPromise, timeoutPromise]);
+      
+      // Only navigate after successful login
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed');
+      console.error('Login error:', err);
+      
+      // Always show an error message for failed login attempts
+      setError('Invalid credentials! Please check your username and password and try again.');
+      
+      // Clear the password field for security
+      setPassword('');
     }
   };
 
@@ -48,7 +62,19 @@ const LoginPage: React.FC = () => {
             Sign in to your account
           </Typography>
 
-          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+          {error && (
+            <Alert 
+              severity="error" 
+              sx={{ 
+                mb: 2, 
+                fontWeight: 'bold',
+                border: '2px solid #f44336',
+                backgroundColor: '#ffebee'
+              }}
+            >
+              {error}
+            </Alert>
+          )}
 
           <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
             <TextField

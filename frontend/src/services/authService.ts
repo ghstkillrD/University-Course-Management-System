@@ -3,8 +3,15 @@ import type { LoginRequest, RegisterRequest, UserInfo, LoginResponse } from '../
 
 export const authService = {
   login: async (credentials: LoginRequest): Promise<LoginResponse> => {
-    const response = await api.post('/auth/login', credentials);
-    return response.data;
+    try {
+      console.log('Attempting login with:', credentials.username);
+      const response = await api.post('/auth/login', credentials);
+      console.log('Login response:', response);
+      return response.data;
+    } catch (error) {
+      console.error('Login API error:', error);
+      throw error;
+    }
   },
 
   register: async (userData: RegisterRequest): Promise<UserInfo> => {

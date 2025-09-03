@@ -2,6 +2,7 @@ package com.ucms.controller;
 
 import com.ucms.dto.LoginRequest;
 import com.ucms.dto.LoginResponse;
+import com.ucms.dto.ErrorResponse;
 import com.ucms.dto.StudentRegistrationRequest;
 import com.ucms.dto.UserInfo;
 import com.ucms.entity.User;
@@ -20,27 +21,30 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         try {
             System.out.println("Login attempt for user: " + loginRequest.getUsername());
             System.out.println("Password provided: " + (loginRequest.getPassword() != null ? "****" : "null"));
             
-            // Temporarily bypass authentication and return a mock response
-            UserInfo mockUserInfo = new UserInfo();
-            mockUserInfo.setId(1L);
-            mockUserInfo.setUsername(loginRequest.getUsername());
-            mockUserInfo.setRole(User.Role.ADMIN);
-            mockUserInfo.setName("Admin User");
-            mockUserInfo.setEmail("admin@example.com");
-            
-            LoginResponse response = new LoginResponse("mock-jwt-token", mockUserInfo);
-            System.out.println("Mock login successful for user: " + loginRequest.getUsername());
+            LoginResponse response = authService.authenticateUser(loginRequest);
+            System.out.println("Login successful for user: " + loginRequest.getUsername());
             return ResponseEntity.ok(response);
             
         } catch (Exception e) {
             System.out.println("Login failed for user: " + loginRequest.getUsername() + ", error: " + e.getMessage());
             e.printStackTrace();
-            throw e;
+            
+            String errorMessage = "Invalid username or password";
+            if (e.getMessage().contains("Bad credentials")) {
+                errorMessage = "Invalid username or password";
+            } else if (e.getMessage().contains("User not found")) {
+                errorMessage = "User not found";
+            } else if (e.getMessage().contains("Account is disabled")) {
+                errorMessage = "Account is disabled";
+            }
+            
+            ErrorResponse errorResponse = new ErrorResponse(errorMessage, 401);
+            return ResponseEntity.status(401).body(errorResponse);
         }
     }
 
