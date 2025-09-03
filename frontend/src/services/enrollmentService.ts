@@ -28,14 +28,23 @@ export interface StudentScheduleResponse {
 }
 
 export interface TranscriptResponse {
-  student: {
-    id: number;
-    name: string;
-    studentId: string;
-  };
-  enrollments: EnrollmentResponse[];
+  studentId: number;
+  studentName: string;
+  email: string;
+  major: string;
+  gpa?: number;
+  totalCredits: number;
   completedCredits: number;
-  gpa: number;
+  courses: TranscriptEntry[];
+}
+
+export interface TranscriptEntry {
+  courseCode: string;
+  courseTitle: string;
+  semester: string;
+  grade: string;
+  credits: number;
+  professorName: string;
 }
 
 export const enrollmentService = {

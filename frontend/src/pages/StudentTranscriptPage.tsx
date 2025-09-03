@@ -95,11 +95,11 @@ const StudentTranscriptPage: React.FC = () => {
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
                 <Box>
                   <Typography variant="body2" color="text.secondary">Name</Typography>
-                  <Typography variant="body1" fontWeight="bold">{transcript.student.name}</Typography>
+                  <Typography variant="body1" fontWeight="bold">{transcript.studentName}</Typography>
                 </Box>
                 <Box>
-                  <Typography variant="body2" color="text.secondary">Student ID</Typography>
-                  <Typography variant="body1" fontWeight="bold">{transcript.student.studentId}</Typography>
+                  <Typography variant="body2" color="text.secondary">Major</Typography>
+                  <Typography variant="body1" fontWeight="bold">{transcript.major}</Typography>
                 </Box>
               </Box>
             </CardContent>
@@ -113,7 +113,7 @@ const StudentTranscriptPage: React.FC = () => {
                   <Box display="flex" alignItems="center">
                     <Grade color="primary" sx={{ mr: 2 }} />
                     <Box>
-                      <Typography variant="h6">{transcript.gpa.toFixed(2)}</Typography>
+                      <Typography variant="h6">{transcript.gpa ? transcript.gpa.toFixed(2) : '0.00'}</Typography>
                       <Typography variant="body2" color="text.secondary">
                         Cumulative GPA
                       </Typography>
@@ -145,7 +145,7 @@ const StudentTranscriptPage: React.FC = () => {
                   <Box display="flex" alignItems="center">
                     <School color="primary" sx={{ mr: 2 }} />
                     <Box>
-                      <Typography variant="h6">{transcript.enrollments.length}</Typography>
+                      <Typography variant="h6">{transcript.courses.length}</Typography>
                       <Typography variant="body2" color="text.secondary">
                         Total Courses
                       </Typography>
@@ -157,7 +157,7 @@ const StudentTranscriptPage: React.FC = () => {
           </Box>
 
           {/* Course History */}
-          {transcript.enrollments && transcript.enrollments.length > 0 ? (
+          {transcript.courses && transcript.courses.length > 0 ? (
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
@@ -177,21 +177,21 @@ const StudentTranscriptPage: React.FC = () => {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {transcript.enrollments.map((enrollment) => (
-                        <TableRow key={enrollment.id}>
+                      {transcript.courses.map((course, index) => (
+                        <TableRow key={index}>
                           <TableCell>
                             <Typography variant="body2" fontWeight="bold">
-                              {enrollment.course.code}
+                              {course.courseCode}
                             </Typography>
                           </TableCell>
                           <TableCell>
                             <Typography variant="body2">
-                              {enrollment.course.title}
+                              {course.courseTitle}
                             </Typography>
                           </TableCell>
                           <TableCell>
                             <Chip 
-                              label={enrollment.course.semester} 
+                              label={course.semester} 
                               size="small" 
                               color="primary" 
                               variant="outlined" 
@@ -201,20 +201,20 @@ const StudentTranscriptPage: React.FC = () => {
                             <Box display="flex" alignItems="center">
                               <Person sx={{ mr: 1, fontSize: 16 }} />
                               <Typography variant="body2">
-                                {enrollment.course.professor?.name || 'TBA'}
+                                {course.professorName || 'TBA'}
                               </Typography>
                             </Box>
                           </TableCell>
                           <TableCell>
                             <Chip 
-                              label={enrollment.grade || 'In Progress'} 
+                              label={course.grade || 'In Progress'} 
                               size="small" 
-                              color={getGradeColor(enrollment.grade || 'In Progress')} 
-                              variant={enrollment.grade ? 'filled' : 'outlined'}
+                              color={getGradeColor(course.grade || 'In Progress')} 
+                              variant={course.grade && course.grade !== 'In Progress' ? 'filled' : 'outlined'}
                             />
                           </TableCell>
                           <TableCell>
-                            <Typography variant="body2">3</Typography>
+                            <Typography variant="body2">{course.credits}</Typography>
                           </TableCell>
                         </TableRow>
                       ))}
