@@ -184,17 +184,17 @@ const StudentSchedulePage: React.FC = () => {
                 <TableRow key={enrollment.id}>
                   <TableCell>
                     <Typography variant="body2" fontWeight="bold">
-                      {enrollment.course.code}
+                      {enrollment.courseCode}
                     </Typography>
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2">
-                      {enrollment.course.title}
+                      {enrollment.courseTitle}
                     </Typography>
                   </TableCell>
                   <TableCell>
                     <Chip 
-                      label={enrollment.course.semester} 
+                      label={enrollment.semester} 
                       size="small" 
                       color="primary" 
                       variant="outlined" 
@@ -204,7 +204,7 @@ const StudentSchedulePage: React.FC = () => {
                     <Box display="flex" alignItems="center">
                       <Person sx={{ mr: 1, fontSize: 16 }} />
                       <Typography variant="body2">
-                        {enrollment.course.professor?.name || 'TBA'}
+                        TBA
                       </Typography>
                     </Box>
                   </TableCell>
@@ -228,7 +228,7 @@ const StudentSchedulePage: React.FC = () => {
                       variant="outlined"
                       startIcon={dropLoading === enrollment.courseId ? <CircularProgress size={16} /> : <Delete />}
                       disabled={dropLoading === enrollment.courseId}
-                      onClick={() => openDropDialog(enrollment.courseId, enrollment.course.title)}
+                      onClick={() => openDropDialog(enrollment.courseId, enrollment.courseTitle)}
                     >
                       {dropLoading === enrollment.courseId ? 'Dropping...' : 'Drop'}
                     </Button>

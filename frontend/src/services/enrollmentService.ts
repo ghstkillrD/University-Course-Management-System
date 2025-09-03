@@ -7,18 +7,15 @@ export interface EnrollmentRequest {
 export interface EnrollmentResponse {
   id: number;
   studentId: number;
+  studentName: string;
+  studentEmail: string;
   courseId: number;
-  course: {
-    id: number;
-    code: string;
-    title: string;
-    semester: string;
-    professor?: {
-      name: string;
-    };
-  };
+  courseCode: string;
+  courseTitle: string;
+  semester: string;
   enrollmentDate: string;
   grade?: string;
+  gradeStatus: string;
 }
 
 export interface StudentScheduleResponse {
