@@ -51,8 +51,8 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/test" element={<TestPage />} />
-            <Route path="/courses" element={<CourseCatalogPage />} />
             <Route path="/" element={<Layout />}>
+              <Route path="courses" element={<CourseCatalogPage />} />
               <Route index element={
                 <ProtectedRoute>
                   <DashboardPage />

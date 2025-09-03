@@ -32,11 +32,15 @@ const CourseCatalogPage: React.FC = () => {
   const [selectedSemester, setSelectedSemester] = useState('');
   const [enrollmentLoading, setEnrollmentLoading] = useState<number | null>(null);
   const [successMessage, setSuccessMessage] = useState('');
+  const [enrolledCourseIds, setEnrolledCourseIds] = useState<Set<number>>(new Set());
   const { user, isAuthenticated } = useAuth();
 
   useEffect(() => {
     fetchCourses();
-  }, []);
+    if (isAuthenticated && user?.role === 'STUDENT') {
+      fetchEnrolledCourses();
+    }
+  }, [isAuthenticated, user]);
 
   useEffect(() => {
     filterCourses();
@@ -51,6 +55,16 @@ const CourseCatalogPage: React.FC = () => {
       setError('Failed to load courses');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchEnrolledCourses = async () => {
+    try {
+      const schedule = await enrollmentService.getMySchedule();
+      const enrolledIds = new Set(schedule.enrollments.map(enrollment => enrollment.courseId));
+      setEnrolledCourseIds(enrolledIds);
+    } catch (err: any) {
+      console.error('Failed to fetch enrolled courses:', err);
     }
   };  const filterCourses = () => {
     let filtered = courses;
@@ -87,6 +101,9 @@ const CourseCatalogPage: React.FC = () => {
       setError('');
       
       await enrollmentService.enrollInCourse(courseId);
+      
+      // Update enrolled courses list
+      setEnrolledCourseIds(prev => new Set(prev).add(courseId));
       
       // Update the course in the local state to reflect enrollment
       setCourses(prevCourses => 
@@ -214,16 +231,22 @@ const CourseCatalogPage: React.FC = () => {
                 {isAuthenticated && user?.role === 'STUDENT' ? (
                   <Button 
                     size="small" 
-                    variant="contained" 
-                    disabled={course.availableSeats === 0 || enrollmentLoading === course.id}
+                    variant={enrolledCourseIds.has(course.id) ? "outlined" : "contained"}
+                    disabled={
+                      course.availableSeats === 0 || 
+                      enrollmentLoading === course.id || 
+                      enrolledCourseIds.has(course.id)
+                    }
                     onClick={() => handleEnrollment(course.id)}
                     startIcon={enrollmentLoading === course.id ? <CircularProgress size={16} /> : <School />}
                   >
                     {enrollmentLoading === course.id 
                       ? 'Enrolling...' 
-                      : course.availableSeats === 0 
-                        ? 'Full' 
-                        : 'Register'
+                      : enrolledCourseIds.has(course.id)
+                        ? 'Enrolled'
+                        : course.availableSeats === 0 
+                          ? 'Full' 
+                          : 'Register'
                     }
                   </Button>
                 ) : (
