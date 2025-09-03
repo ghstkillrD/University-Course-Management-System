@@ -35,9 +35,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // Skip JWT processing for auth endpoints
             String requestURI = request.getRequestURI();
             logger.debug("Processing request: {}", requestURI);
+            System.out.println("JWT Filter - Processing request: " + requestURI);
             
             if (requestURI.contains("/auth/login") || requestURI.contains("/auth/register")) {
                 logger.debug("Skipping JWT processing for auth endpoint: {}", requestURI);
+                System.out.println("JWT Filter - Skipping JWT processing for auth endpoint: " + requestURI);
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -52,15 +54,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     String username = tokenProvider.getUsernameFromToken(jwt);
                     logger.debug("Username from token: {}", username);
                     
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                    logger.debug("User details loaded: {}, authorities: {}", userDetails.getUsername(), userDetails.getAuthorities().toString());
-                    
-                    UsernamePasswordAuthenticationToken authentication = 
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-                    logger.debug("Authentication set in security context for user: {}", username);
+                    // Only set authentication if not already set
+                    if (SecurityContextHolder.getContext().getAuthentication() == null) {
+                        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                        logger.debug("User details loaded: {}, authorities: {}", userDetails.getUsername(), userDetails.getAuthorities().toString());
+                        
+                        UsernamePasswordAuthenticationToken authentication = 
+                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                        logger.debug("Authentication set in security context for user: {}", username);
+                        
+                        // Verify it was set
+                        if (SecurityContextHolder.getContext().getAuthentication() != null) {
+                            logger.debug("✓ Authentication confirmed in SecurityContext: {}", 
+                                SecurityContextHolder.getContext().getAuthentication().getName());
+                        } else {
+                            logger.error("✗ Authentication was not properly set in SecurityContext!");
+                        }
+                    } else {
+                        logger.debug("Authentication already exists in SecurityContext");
+                    }
                 } else {
                     logger.debug("JWT token validation failed");
                 }
@@ -69,6 +84,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         } catch (Exception ex) {
             logger.error("Could not set user authentication in security context", ex);
+        }
+
+        // Final check before passing to next filter
+        if (SecurityContextHolder.getContext().getAuthentication() != null) {
+            logger.debug("🔐 Final check: Authentication exists before next filter: {}", 
+                SecurityContextHolder.getContext().getAuthentication().getName());
+        } else {
+            logger.debug("❌ Final check: No authentication in SecurityContext before next filter");
         }
 
         filterChain.doFilter(request, response);
