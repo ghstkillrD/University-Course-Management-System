@@ -24,4 +24,8 @@ public class GradeResponse {
     private String comments;
     private Integer credits;
     private Double gradePoints;
+    private String midtermGrade;
+    private String finalGrade;
+    private Double attendance;
+    private Double participationScore;
 }

@@ -10,4 +10,8 @@ import lombok.NoArgsConstructor;
 public class UpdateGradeRequest {
     private String grade;
     private String comments; // Optional comments for grade update
+    private String midtermGrade;
+    private String finalGrade;
+    private Double attendance;
+    private Double participationScore;
 }

@@ -354,7 +354,14 @@ public class AdminService {
             throw new RuntimeException("Invalid grade: " + request.getGrade());
         }
 
+        // Update all grade fields
         enrollment.setGrade(request.getGrade());
+        enrollment.setComments(request.getComments());
+        enrollment.setMidtermGrade(request.getMidtermGrade());
+        enrollment.setFinalGrade(request.getFinalGrade());
+        enrollment.setAttendance(request.getAttendance());
+        enrollment.setParticipationScore(request.getParticipationScore());
+        
         Enrollment savedEnrollment = enrollmentRepository.save(enrollment);
 
         // Log grade override
@@ -719,6 +726,11 @@ public class AdminService {
         response.setGrade(enrollment.getGrade());
         response.setCredits(3); // Assuming 3 credits per course
         response.setGradePoints(enrollment.getGrade() != null ? getGradePoints(enrollment.getGrade()) : 0.0);
+        response.setComments(enrollment.getComments());
+        response.setMidtermGrade(enrollment.getMidtermGrade());
+        response.setFinalGrade(enrollment.getFinalGrade());
+        response.setAttendance(enrollment.getAttendance());
+        response.setParticipationScore(enrollment.getParticipationScore());
         return response;
     }
 

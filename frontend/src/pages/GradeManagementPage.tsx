@@ -31,7 +31,7 @@ import {
   Search,
   Edit,
   Assessment,
-  Assignment,
+  // Assignment, // Temporarily disabled until Assignment system is implemented
 } from '@mui/icons-material';
 import api from '../services/api';
 
@@ -54,6 +54,7 @@ interface GradeEntry {
   finalGrade?: string;
   attendance: number;
   participationScore: number;
+  comments?: string;
 }
 
 interface Assignment {
@@ -74,6 +75,18 @@ const GradeManagementPage: React.FC = () => {
   const [semesterFilter, setSemesterFilter] = useState('ALL');
   const [selectedGrade, setSelectedGrade] = useState<GradeEntry | null>(null);
   const [gradeDialogOpen, setGradeDialogOpen] = useState(false);
+  const [editGradeDialogOpen, setEditGradeDialogOpen] = useState(false);
+  // Temporarily disabled until Assignment system is implemented
+  // const [assignmentGradesDialogOpen, setAssignmentGradesDialogOpen] = useState(false);
+  const [editGradeData, setEditGradeData] = useState({
+    grade: '',
+    gradePoints: '',
+    midtermGrade: '',
+    finalGrade: '',
+    attendance: '',
+    participationScore: '',
+    comments: ''
+  });
 
   // Initialize filters from location state if provided
   useEffect(() => {
@@ -108,8 +121,8 @@ const GradeManagementPage: React.FC = () => {
       const response = await api.get(`/admin/grades?${params}`);
       
       // Transform backend data to match frontend interface
-      const transformedGrades: GradeEntry[] = response.data.content.map((grade: any) => ({
-        id: grade.id,
+      const transformedGrades: GradeEntry[] = response.data.content.map((grade: any, index: number) => ({
+        id: grade.enrollmentId || (1000000 + index), // Use enrollmentId from backend response
         studentId: grade.studentId,
         studentName: grade.studentName || 'Unknown Student',
         studentEmail: grade.studentEmail || 'N/A',
@@ -126,9 +139,10 @@ const GradeManagementPage: React.FC = () => {
         finalGrade: grade.finalGrade || undefined,
         attendance: grade.attendance || 95,
         participationScore: grade.participationScore || 90,
+        comments: grade.comments || undefined,
         assignments: grade.assignments || [
           {
-            id: 1,
+            id: (grade.enrollmentId || (1000000 + index)) * 1000 + 1, // Create unique assignment ID
             name: 'Assignment 1',
             type: 'Homework',
             maxPoints: 100,
@@ -150,6 +164,76 @@ const GradeManagementPage: React.FC = () => {
     setSelectedGrade(grade);
     setGradeDialogOpen(true);
   };
+
+  const handleEditGrade = (grade: GradeEntry) => {
+    setSelectedGrade(grade);
+    setEditGradeData({
+      grade: grade.grade || '',
+      gradePoints: grade.gradePoints?.toString() || '',
+      midtermGrade: grade.midtermGrade || '',
+      finalGrade: grade.finalGrade || '',
+      attendance: grade.attendance?.toString() || '',
+      participationScore: grade.participationScore?.toString() || '',
+      comments: grade.comments || '' // Use comments from backend
+    });
+    setEditGradeDialogOpen(true);
+  };
+
+  // Temporarily disabled until Assignment system is implemented
+  /*
+  const handleAssignmentGrades = (grade: GradeEntry) => {
+    setSelectedGrade(grade);
+    setAssignmentGradesDialogOpen(true);
+  };
+  */
+
+  const handleSaveGrade = async () => {
+    try {
+      if (!selectedGrade) return;
+      
+      // API call to update grade - send all form fields
+      const updateData = {
+        grade: editGradeData.grade || null,
+        comments: editGradeData.comments || null,
+        midtermGrade: editGradeData.midtermGrade || null,
+        finalGrade: editGradeData.finalGrade || null,
+        attendance: editGradeData.attendance ? parseFloat(editGradeData.attendance) : null,
+        participationScore: editGradeData.participationScore ? parseFloat(editGradeData.participationScore) : null
+      };
+
+      await api.put(`/admin/grades/${selectedGrade.id}`, updateData);
+      
+      // Refresh grades after update
+      fetchGrades();
+      setEditGradeDialogOpen(false);
+      
+      console.log('Grade updated successfully');
+    } catch (error) {
+      console.error('Error updating grade:', error);
+    }
+  };
+
+  // Temporarily disabled until Assignment system is implemented
+  /*
+  const handleSaveAssignment = async (assignmentId: number, earnedPoints: number) => {
+    try {
+      if (!selectedGrade) return;
+      
+      // API call to update individual assignment grade
+      const updateData = {
+        earnedPoints: earnedPoints
+      };
+
+      await api.put(`/admin/grades/${selectedGrade.id}/assignments/${assignmentId}`, updateData);
+      
+      console.log('Assignment grade updated successfully');
+      // Optionally refresh the grade details
+      fetchGrades();
+    } catch (error) {
+      console.error('Error updating assignment grade:', error);
+    }
+  };
+  */
 
   const calculateOverallScore = (assignments: Assignment[]) => {
     const totalMax = assignments.reduce((sum, a) => sum + a.maxPoints, 0);
@@ -311,10 +395,10 @@ const GradeManagementPage: React.FC = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {grades.map((grade) => {
+            {grades.map((grade, index) => {
               const overallScore = calculateOverallScore(grade.assignments);
               return (
-                <TableRow key={grade.id}>
+                <TableRow key={`grade-${grade.id}-${index}`}>
                   <TableCell>
                     <Box>
                       <Typography variant="body2" fontWeight="bold">
@@ -387,15 +471,18 @@ const GradeManagementPage: React.FC = () => {
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Edit Grade">
-                      <IconButton>
+                      <IconButton onClick={() => handleEditGrade(grade)}>
                         <Edit />
                       </IconButton>
                     </Tooltip>
+                    {/* Temporarily disabled until Assignment system is implemented */}
+                    {/*
                     <Tooltip title="Assignment Grades">
-                      <IconButton>
+                      <IconButton onClick={() => handleAssignmentGrades(grade)}>
                         <Assignment />
                       </IconButton>
                     </Tooltip>
+                    */}
                   </TableCell>
                 </TableRow>
               );
@@ -509,11 +596,165 @@ const GradeManagementPage: React.FC = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setGradeDialogOpen(false)}>Close</Button>
-          <Button variant="contained" startIcon={<Edit />}>
+          <Button 
+            variant="contained" 
+            startIcon={<Edit />}
+            onClick={() => {
+              if (selectedGrade) {
+                setGradeDialogOpen(false);
+                handleEditGrade(selectedGrade);
+              }
+            }}
+          >
             Edit Grades
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Edit Grade Dialog */}
+      <Dialog open={editGradeDialogOpen} onClose={() => setEditGradeDialogOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle>Edit Grade</DialogTitle>
+        <DialogContent>
+          {selectedGrade && (
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="h6" gutterBottom>
+                Student: {selectedGrade.studentName} | Course: {selectedGrade.courseCode}
+              </Typography>
+              
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mt: 3 }}>
+                <TextField
+                  label="Final Grade"
+                  value={editGradeData.grade}
+                  onChange={(e) => setEditGradeData(prev => ({ ...prev, grade: e.target.value }))}
+                  placeholder="A, B, C, D, F"
+                />
+                <TextField
+                  label="Grade Points"
+                  type="number"
+                  value={editGradeData.gradePoints}
+                  onChange={(e) => setEditGradeData(prev => ({ ...prev, gradePoints: e.target.value }))}
+                  placeholder="0.0 - 4.0"
+                />
+                <TextField
+                  label="Midterm Grade"
+                  value={editGradeData.midtermGrade}
+                  onChange={(e) => setEditGradeData(prev => ({ ...prev, midtermGrade: e.target.value }))}
+                  placeholder="A, B, C, D, F"
+                />
+                <TextField
+                  label="Final Exam Grade"
+                  value={editGradeData.finalGrade}
+                  onChange={(e) => setEditGradeData(prev => ({ ...prev, finalGrade: e.target.value }))}
+                  placeholder="A, B, C, D, F"
+                />
+                <TextField
+                  label="Attendance (%)"
+                  type="number"
+                  value={editGradeData.attendance}
+                  onChange={(e) => setEditGradeData(prev => ({ ...prev, attendance: e.target.value }))}
+                  placeholder="0-100"
+                />
+                <TextField
+                  label="Participation Score (%)"
+                  type="number"
+                  value={editGradeData.participationScore}
+                  onChange={(e) => setEditGradeData(prev => ({ ...prev, participationScore: e.target.value }))}
+                  placeholder="0-100"
+                />
+                <TextField
+                  label="Comments (Optional)"
+                  multiline
+                  rows={3}
+                  value={editGradeData.comments}
+                  onChange={(e) => setEditGradeData(prev => ({ ...prev, comments: e.target.value }))}
+                  placeholder="Enter any comments about this grade update..."
+                />
+              </Box>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditGradeDialogOpen(false)}>Cancel</Button>
+          <Button variant="contained" onClick={handleSaveGrade}>Save Changes</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Assignment Grades Dialog - Temporarily disabled until Assignment system is implemented */}
+      {/*
+      <Dialog open={assignmentGradesDialogOpen} onClose={() => setAssignmentGradesDialogOpen(false)} maxWidth="lg" fullWidth>
+        <DialogTitle>Assignment Grades</DialogTitle>
+        <DialogContent>
+          {selectedGrade && (
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="h6" gutterBottom>
+                Student: {selectedGrade.studentName} | Course: {selectedGrade.courseCode}
+              </Typography>
+              
+              <TableContainer component={Paper} sx={{ mt: 2 }}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Assignment</TableCell>
+                      <TableCell>Type</TableCell>
+                      <TableCell>Max Points</TableCell>
+                      <TableCell>Earned Points</TableCell>
+                      <TableCell>Due Date</TableCell>
+                      <TableCell>Status</TableCell>
+                      <TableCell>Actions</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {selectedGrade.assignments.map((assignment) => (
+                      <TableRow key={assignment.id}>
+                        <TableCell>{assignment.name}</TableCell>
+                        <TableCell>{assignment.type}</TableCell>
+                        <TableCell>{assignment.maxPoints}</TableCell>
+                        <TableCell>
+                          <TextField
+                            size="small"
+                            type="number"
+                            defaultValue={assignment.earnedPoints || ''}
+                            placeholder="0"
+                            sx={{ width: 80 }}
+                            id={`assignment-${assignment.id}`}
+                          />
+                        </TableCell>
+                        <TableCell>{new Date(assignment.dueDate).toLocaleDateString()}</TableCell>
+                        <TableCell>
+                          <Chip 
+                            label={assignment.submitted ? 'Submitted' : 'Pending'} 
+                            color={assignment.submitted ? 'success' : 'warning'}
+                            size="small"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Button 
+                            size="small" 
+                            variant="contained" 
+                            color="primary"
+                            onClick={() => {
+                              const input = document.getElementById(`assignment-${assignment.id}`) as HTMLInputElement;
+                              const earnedPoints = parseFloat(input.value) || 0;
+                              handleSaveAssignment(assignment.id, earnedPoints);
+                            }}
+                          >
+                            Save
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAssignmentGradesDialogOpen(false)}>Close</Button>
+          <Button variant="contained" color="success">Save All Changes</Button>
+        </DialogActions>
+      </Dialog>
+      */}
     </Box>
   );
 };

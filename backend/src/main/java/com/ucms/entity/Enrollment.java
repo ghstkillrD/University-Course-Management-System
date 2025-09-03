@@ -30,4 +30,20 @@ public class Enrollment {
     
     @Column(length = 5)
     private String grade;
+    
+    // Additional grade components
+    @Column(name = "midterm_grade", length = 5)
+    private String midtermGrade;
+    
+    @Column(name = "final_grade", length = 5)
+    private String finalGrade;
+    
+    @Column(name = "attendance")
+    private Double attendance;
+    
+    @Column(name = "participation_score")
+    private Double participationScore;
+    
+    @Column(name = "comments", length = 1000)
+    private String comments;
 }
